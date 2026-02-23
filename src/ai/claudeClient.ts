@@ -38,6 +38,7 @@ export interface ClaudeContext {
   eeg?: EEGState;
   pkStates: Record<string, { ce: number }>;
   elapsedSeconds?: number;
+    _systemOverride?: string;
   learnerLevel?: 'novice' | 'intermediate' | 'advanced';
   recentEvents?: string[];
 }
@@ -233,7 +234,7 @@ export async function streamClaude(
       model: 'claude-opus-4-0-20250514',
       max_tokens: 512,
       stream: true,
-      system: buildSystemPrompt(ctx),
+      system: ctx._systemOverride || buildSystemPrompt(ctx),
       messages: [{ role: 'user', content: query }],
     }),
     signal,
