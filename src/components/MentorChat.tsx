@@ -26,7 +26,7 @@ interface MentorChatProps {
 
 const WELCOME_MSG: MentorMessage = {
   role: 'mentor',
-  content: 'Hi! I'm Millie, your AI sedation mentor — your virtual attending anesthesiologist. Start the simulation, administer drugs, and I\'ll provide real-time clinical guidance. Ask me anything below, or use the Ghost Dose panel to preview drug effects before committing.',
+  content: 'Hi! I am Millie, your AI sedation mentor — your virtual attending anesthesiologist. Start the simulation, administer drugs, and I\'ll provide real-time clinical guidance. Ask me anything below, or use the Ghost Dose panel to preview drug effects before committing.',
   timestamp: Date.now(),
   confidence: 1.0,
 };
