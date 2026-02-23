@@ -182,10 +182,24 @@ export function offlineFallback(
   if (ctx.eeg && ctx.eeg.bisIndex < 20) extras.push(`⚠ BIS ${ctx.eeg.bisIndex} — burst suppression detected.`);
 
   if (!text) {
-    text = `Based on current state: MOASS ${ctx.moass}/5, ${ctx.vitals.spo2}% SpO2. `;
-    if (ctx.vitals.spo2 < 94) text += 'Note: SpO2 trending low — monitor closely. ';
-    if (ctx.moass <= 1) text += 'Patient deeply sedated. ';
-    text += 'Consider the overall clinical picture and titrate to effect. What specific aspect would you like guidance on?';
+    // Build a context-aware response when no knowledge base entry matches
+    const parts: string[] = [];
+    parts.push(`Current patient status: MOASS ${ctx.moass}/5, SpO2 ${ctx.vitals.spo2}%, HR ${ctx.vitals.hr}, BP ${ctx.vitals.sbp}/${(ctx.vitals as any).dbp ?? '?'}, RR ${ctx.vitals.rr}, EtCO2 ${ctx.vitals.etco2}.`);
+    if (ctx.eeg) parts.push(`EEG/BIS: ${ctx.eeg.bisIndex} (${ctx.eeg.sedationState}).`);
+    const ceEntries = Object.entries(ctx.pkStates).filter(([, s]) => s.ce > 0).map(([d, s]) => `${d} Ce ${s.ce.toFixed(2)} mcg/mL`);
+    if (ceEntries.length) parts.push(`Active drugs: ${ceEntries.join(', ')}.`);
+    // Sedation depth assessment
+    if (ctx.moass <= 1) parts.push('The patient is deeply sedated (MOASS 0-1). Ensure airway patency, monitor for respiratory depression, and consider whether this depth is appropriate for the procedure.');
+    else if (ctx.moass <= 3) parts.push('Sedation depth is in the moderate range (MOASS 2-3), which is typically appropriate for procedural sedation. Continue monitoring.');
+    else if (ctx.moass >= 4) parts.push('The patient is lightly sedated (MOASS 4-5). If procedural sedation is needed, consider titrating additional medication.');
+    // Vital sign assessment
+    if (ctx.vitals.spo2 < 94) parts.push('SpO2 is below 94% -- consider increasing FiO2, performing chin lift/jaw thrust, and monitoring EtCO2 for hypoventilation.');
+    if (ctx.vitals.hr < 50) parts.push('Heart rate is below 50 bpm. Consider atropine 0.5 mg IV if symptomatic or hemodynamically significant.');
+    if (ctx.vitals.sbp < 90) parts.push('Systolic BP is below 90 mmHg. Consider IV fluid bolus, reducing sedative infusion rate, or vasopressor support.');
+    if (ctx.vitals.rr < 8) parts.push('Respiratory rate is critically low. Assess airway, consider bag-mask ventilation, and review opioid dosing.');
+    if (parts.length <= 2) parts.push('All vitals are within acceptable ranges. Continue standard monitoring and titrate medications as needed. Ask me about specific drugs, dosing, EEG patterns, or clinical scenarios.');
+    text = parts.join(' ');
+    confidence = 0.75;
   }
 
   if (extras.length) {
