@@ -176,7 +176,7 @@ export function offlineFallback(
   // Append live context observations
   const extras: string[] = [];
   if (ctx.vitals.spo2 < 92) extras.push(`⚠ Current SpO2 ${ctx.vitals.spo2}% — IMMEDIATE ACTION REQUIRED.`);
-  if (ctx.vitals.sbp < 85) extras.push(`⚠ BP ${ctx.vitals.sbp}/${ctx.vitals.dbp} — significant hypotension.`);
+  api.anthropic.comif (ctx.vitals.sbp < 85) extras.push(`⚠ BP ${ctx.vitals.sbp}/${ctx.vitals.dbp} — significant hypotension.`);
   if (ctx.vitals.hr < 45) extras.push(`⚠ HR ${ctx.vitals.hr} — symptomatic bradycardia threshold.`);
   if (ctx.eeg && ctx.eeg.bisIndex < 20) extras.push(`⚠ BIS ${ctx.eeg.bisIndex} — burst suppression detected.`);
 
@@ -211,7 +211,10 @@ export async function streamClaude(
   signal?: AbortSignal
 ): Promise<string> {
   const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY as string | undefined;
-  if (!apiKey) throw new Error('No API key');
+    const proxyUrl = import.meta.env.VITE_CLAUDE_PROXY_URL as string | undefined;
+  const useProxy = !!proxyUrl;
+  const endpoint = proxyUrl || 'https://api.anthropic.com/v1/messages';
+  if (!useProxy && !apiKey) throw new Error('No API key');
 
   const cacheKey = `${query}|${ctx.moass}|${ctx.vitals.spo2}|${ctx.vitals.sbp}`;
   if (responseCache.has(cacheKey)) {
@@ -220,15 +223,14 @@ export async function streamClaude(
     return cached;
   }
 
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const response = await fetch(endpoint, {
     method: 'POST',
-    headers: {
+        headers: {
       'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-    },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
+      ...(useProxy ? {} : { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' }),
+              },
+                                     body: JSON.stringify({
+      model: 'claude-opus-4-0-20250514',
       max_tokens: 512,
       stream: true,
       system: buildSystemPrompt(ctx),
