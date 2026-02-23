@@ -5,6 +5,7 @@ import { TwinState } from '../ai/digitalTwin';
 import { Scenario } from '../ai/scenarioGenerator';
 import { GhostDose, TutorialState } from '../types';
 import type { ScenarioQuestion } from '../engine/ScenarioEngine';
+import type { SimMasterAnnotation } from '../ai/simMaster';
 
 interface AIState {
   // Orchestrator
@@ -32,7 +33,7 @@ interface AIState {
 
   // Dashboard
   isDashboardOpen: boolean;
-  activeAITab: 'eeg' | 'mentor';
+  activeAITab: 'eeg' | 'mentor' | 'simmaster';
 
   // Ghost Dose
   ghostDose: GhostDose | null;
@@ -55,6 +56,10 @@ interface AIState {
   // Continue button state (manual step advancement)
   pendingContinue: { stepId: string; stepLabel: string } | null;
 
+  // SimMaster
+  simMasterEnabled: boolean;
+  simMasterAnnotation: SimMasterAnnotation | null;
+
   // Actions
   initializeAI: () => void;
   startAI: () => void;
@@ -67,7 +72,7 @@ interface AIState {
   addMentorMessage: (role: 'user' | 'mentor', content: string) => void;
   setMentorThinking: (thinking: boolean) => void;
   toggleDashboard: () => void;
-  setActiveAITab: (tab: 'eeg' | 'mentor') => void;
+  setActiveAITab: (tab: 'eeg' | 'mentor' | 'simmaster') => void;
   destroyAI: () => void;
   setGhostDose: (ghost: GhostDose | null) => void;
   setTutorialState: (state: TutorialState | null) => void;
@@ -78,6 +83,8 @@ interface AIState {
   setCurrentScenarioPhase: (phase: 'pre_induction' | 'induction' | 'maintenance' | 'complication' | 'recovery' | 'debrief' | null) => void;
   setScenarioElapsedSeconds: (seconds: number) => void;
   setPendingContinue: (pending: { stepId: string; stepLabel: string } | null) => void;
+  setSimMasterEnabled: (enabled: boolean) => void;
+  setSimMasterAnnotation: (a: SimMasterAnnotation | null) => void;
 }
 
 const useAIStore = create<AIState>((set, get) => ({
@@ -103,6 +110,8 @@ const useAIStore = create<AIState>((set, get) => ({
   currentScenarioPhase: null,
   scenarioElapsedSeconds: 0,
   pendingContinue: null,
+  simMasterEnabled: false,
+  simMasterAnnotation: null,
 
   initializeAI: () => {
     const orchestrator = new MultiAgentOrchestrator();
@@ -236,6 +245,14 @@ const useAIStore = create<AIState>((set, get) => ({
 
   setPendingContinue: (pending) => {
     set({ pendingContinue: pending });
+  },
+
+  setSimMasterEnabled: (enabled) => {
+    set({ simMasterEnabled: enabled });
+  },
+
+  setSimMasterAnnotation: (a) => {
+    set({ simMasterAnnotation: a });
   },
 }));
 
