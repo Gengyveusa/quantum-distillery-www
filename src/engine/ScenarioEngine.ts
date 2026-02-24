@@ -47,7 +47,9 @@ export type SimAction =
   | { type: 'apply_intervention'; intervention: string }
   | { type: 'select_patient'; archetypeKey: string }
   | { type: 'advance_time'; seconds: number }
-  | { type: 'set_speed'; speed: number };
+  | { type: 'set_speed'; speed: number }
+  | { type: 'set_vital'; parameter: string; value: number }
+  | { type: 'start_desaturation'; rate: number };
 
 export interface InteractiveScenario {
   id: string;
@@ -81,6 +83,49 @@ export interface InteractiveScenario {
   };
   /** Original JSON scenario source (present only for JSON-driven scenarios). */
   jsonSource?: SedSimScenario;
+  // Optional enrichment fields
+  shortObjective?: string;
+  tags?: string[];
+  teachingPoints?: string[];
+  patientDetail?: {
+    age: number;
+    sex: 'M' | 'F' | 'Other';
+    heightCm: number;
+    weightKg: number;
+    asa: 1 | 2 | 3 | 4;
+    comorbidities: string[];
+    airway?: {
+      mallampati: 1 | 2 | 3 | 4;
+      bmi: number;
+      neckCircumferenceCm?: number;
+      notes?: string;
+    };
+    baselineMeds?: string[];
+  };
+  successCriteria?: {
+    description: string;
+    maxSpo2Drop?: number;
+    noMoassBelow?: number;
+    maxTotalDoses?: Record<string, number>;
+    timeInTargetMoassRange?: { low: number; high: number; minSeconds: number };
+  };
+  failureCriteria?: {
+    description: string;
+    spo2BelowForS?: { threshold: number; duration: number };
+    sbpBelowForS?: { threshold: number; duration: number };
+    moass0ForS?: { duration: number };
+    hardStopEvents?: string[];
+  };
+  debriefEnhanced?: {
+    keyQuestions: string[];
+    graphsToHighlight: string[];
+    scoringWeights?: {
+      titration: number;
+      airwayManagement: number;
+      hemodynamicControl: number;
+      complicationResponse: number;
+    };
+  };
 }
 
 // ─── ScenarioEngine ─────────────────────────────────────────────────────────
@@ -285,12 +330,14 @@ export class ScenarioEngine {
   private timerId: ReturnType<typeof setInterval> | null = null;
   private firedStepIds = new Set<string>();
   private physiologyDurationCounters: Record<string, number> = {};
+    private physioStepEligibleSince: Record<string, number> = {};
   awaitingAnswer: { stepId: string; question: ScenarioQuestion } | null = null;
   awaitingContinue: { stepId: string } | null = null;
   private started = false;
   // JSON scenario support
   private jsonScenario: SedSimScenario | null = null;
   private jsonAnswers = new Map<string, string>(); // stateId → selected option label
+  private lastStepFiredAt = 0;
 
   loadScenario(scenario: InteractiveScenario) {
     this.jsonScenario = scenario.jsonSource ?? null;
@@ -299,8 +346,10 @@ export class ScenarioEngine {
     this.scenarioTimeSeconds = 0;
     this.firedStepIds.clear();
     this.physiologyDurationCounters = {};
+        this.physioStepEligibleSince = {};
     this.awaitingAnswer = null;
     this.awaitingContinue = null;
+    this.lastStepFiredAt = 0;
     this.started = false;
     // Reset sim and select patient archetype
     const sim = useSimStore.getState();
@@ -341,6 +390,7 @@ export class ScenarioEngine {
     vitalCoherenceMonitor.start(() => {
       this.awaitingAnswer = null;
       if (this.awaitingContinue) {
+                this.firedStepIds.add(this.awaitingContinue.stepId);
         this.awaitingContinue = null;
         useAIStore.getState().setPendingContinue(null);
       }
@@ -483,6 +533,10 @@ export class ScenarioEngine {
   stop() {
     if (this.timerId) clearInterval(this.timerId);
     this.timerId = null;
+    if (this.desaturationTimer) {
+      clearInterval(this.desaturationTimer);
+      this.desaturationTimer = null;
+    }
     this.started = false;
     useAIStore.getState().setScenarioRunning(false);
     useAIStore.getState().setCurrentQuestion(null);
@@ -511,6 +565,11 @@ export class ScenarioEngine {
 
   private evaluateTriggers() {
     if (!this.scenario) return;
+
+    // Cooldown: skip non-physiology triggers within 5 scenario-seconds of the last
+    // fired step to prevent rapid progression. on_physiology safety triggers are exempt.
+    const cooldownActive = this.scenarioTimeSeconds - this.lastStepFiredAt < 5;
+
     const sim = useSimStore.getState();
     const vitals = sim.vitals;
     const moass = sim.moass;
@@ -575,6 +634,8 @@ export class ScenarioEngine {
       }
 
       if (shouldFire) {
+        // Enforce cooldown for non-physiology triggers
+        if (cooldownActive && step.triggerType !== 'on_physiology') continue;
         // If a physiology trigger fires while awaiting continue, auto-clear the pending continue
         if (this.awaitingContinue && step.triggerType === 'on_physiology') {
           this.awaitingContinue = null;
@@ -611,17 +672,47 @@ export class ScenarioEngine {
         if (
           nextTimedStep &&
           nextTimedStep.triggerTimeSeconds !== undefined &&
-          this.scenarioTimeSeconds < nextTimedStep.triggerTimeSeconds
+          this.scenarioTimeSeconds < nextTimedStep.triggerTimeSeconds &&
+          this.scenarioTimeSeconds - this.lastStepFiredAt >= 10
         ) {
           // Fast-forward to just before the trigger so it fires on the very next tick
           this.scenarioTimeSeconds = nextTimedStep.triggerTimeSeconds - TRIGGER_PRE_FIRE_BUFFER_SECONDS;
           useAIStore.getState().setScenarioElapsedSeconds(this.scenarioTimeSeconds);
         }
       }
+
+              // Physiology timeout: auto-fire on_physiology steps that have been
+        // eligible (all prior steps fired) for over 60 scenario-seconds.
+        // This prevents stalls when sim vitals never reach the trigger threshold.
+        const PHYSIO_TIMEOUT_SECONDS = 60;
+        const physioSteps = unfiredSteps.filter(s => s.triggerType === 'on_physiology');
+        for (const ps of physioSteps) {
+          // Track when this step first became eligible
+          if (!(ps.id in this.physioStepEligibleSince)) {
+            this.physioStepEligibleSince[ps.id] = this.scenarioTimeSeconds;
+          }
+          const elapsed = this.scenarioTimeSeconds - this.physioStepEligibleSince[ps.id];
+          if (elapsed >= PHYSIO_TIMEOUT_SECONDS) {
+            // Auto-fire with a note that the condition was simulated
+            this.speakAsMillie([
+              '\u26A0\uFE0F The expected physiological change has been simulated to advance the scenario.'
+            ]);
+            this.fireStep(ps);
+            return;
+          }
+        }
+
+            // Auto-debrief: when every scenario step has been completed,
+      // automatically stop the engine and display the debrief summary.
+      if (unfiredSteps.length === 0) {
+        this.stop();
+        return;
+      }
     }
   }
 
   private fireStep(step: InteractiveScenarioStep) {
+    this.lastStepFiredAt = this.scenarioTimeSeconds;
     // Clear previous highlights and set new ones if this step has highlights
     const text = step.millieDialogue.join(' ');
 
@@ -683,6 +774,8 @@ export class ScenarioEngine {
     }
   }
 
+  private desaturationTimer: ReturnType<typeof setInterval> | null = null;
+
   private applySimAction(action: SimAction) {
     const sim = useSimStore.getState();
     switch (action.type) {
@@ -708,6 +801,28 @@ export class ScenarioEngine {
       case 'set_speed':
         sim.setSpeed(action.speed);
         break;
+      case 'set_vital':
+        // Override a vital sign directly in the store
+        sim.overrideVital(action.parameter, action.value);
+        break;
+      case 'start_desaturation': {
+        // Gradually decrease SpO2 at the specified rate (% per minute) using elapsed time
+        if (this.desaturationTimer) clearInterval(this.desaturationTimer);
+        const startSpo2 = useSimStore.getState().vitals.spo2;
+        const startMs = Date.now();
+        this.desaturationTimer = setInterval(() => {
+          const elapsedMin = (Date.now() - startMs) / 60000;
+          const targetSpo2 = Math.max(60, startSpo2 - action.rate * elapsedMin);
+          const current = useSimStore.getState().vitals.spo2;
+          if (current > 60) {
+            useSimStore.getState().overrideVital('spo2', Math.min(current, targetSpo2));
+          } else {
+            if (this.desaturationTimer) clearInterval(this.desaturationTimer);
+            this.desaturationTimer = null;
+          }
+        }, 1000);
+        break;
+      }
     }
   }
 
@@ -742,6 +857,7 @@ export class ScenarioEngine {
     const sim = useSimStore.getState();
     const score = generateDebrief(sim.eventLog, sim.trendData);
     const { discussionQuestions, keyTakeaways } = this.scenario.debrief;
+    const enhanced = this.scenario.debriefEnhanced;
 
     const debriefLines = [
       `🎓 **Scenario Debrief — ${this.scenario.title}**\n`,
@@ -750,6 +866,17 @@ export class ScenarioEngine {
         `• EEG Interpretation: ${score.eegInterpretation}%\n` +
         `• Complication Response: ${score.complicationResponse}%`,
     ];
+
+    if (enhanced?.scoringWeights) {
+      const w = enhanced.scoringWeights;
+      debriefLines.push(
+        `📊 **Scoring Breakdown:**\n` +
+          `• Titration (${Math.round(w.titration * 100)}%)\n` +
+          `• Airway Management (${Math.round(w.airwayManagement * 100)}%)\n` +
+          `• Hemodynamic Control (${Math.round(w.hemodynamicControl * 100)}%)\n` +
+          `• Complication Response (${Math.round(w.complicationResponse * 100)}%)`
+      );
+    }
 
     if (score.strengths.length) {
       debriefLines.push(`✅ **Strengths:**\n${score.strengths.map(s => `• ${s}`).join('\n')}`);
@@ -782,6 +909,20 @@ export class ScenarioEngine {
         debriefLines.push(`**Checklist:**\n${itemLines.join('\n')}`);
       }
     }
+
+    if (enhanced?.keyQuestions?.length) {
+      debriefLines.push(`💬 **Key Questions:**\n${enhanced.keyQuestions.map(q => `• ${q}`).join('\n')}`);
+    } else {
+      debriefLines.push(`💬 **Discussion Questions:**\n${discussionQuestions.map(q => `• ${q}`).join('\n')}`);
+    }
+
+    if (enhanced?.graphsToHighlight?.length) {
+      debriefLines.push(`📈 **Review These Graphs:** ${enhanced.graphsToHighlight.join(', ')}`);
+    }
+
+    debriefLines.push(
+      `🔑 **Key Takeaways:**\n${keyTakeaways.map(t => `• ${t}`).join('\n')}`,
+    );
 
     this.speakAsMillie(debriefLines);
   }

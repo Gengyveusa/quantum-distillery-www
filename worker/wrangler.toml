@@ -1,0 +1,18 @@
+# worker/wrangler.toml
+# Cloudflare Worker configuration for SedSim Claude API proxy
+#
+# Setup:
+#   1. npm install -g wrangler (or npx wrangler)
+#   2. wrangler login
+#   3. cd worker && npx wrangler deploy
+#   4. npx wrangler secret put ANTHROPIC_API_KEY
+#      (paste your Anthropic API key when prompted)
+#   5. Set VITE_CLAUDE_PROXY_URL in your .env to:
+#      https://sedsim-claude-proxy.<your-subdomain>.workers.dev
+
+name = "sedsim-claude-proxy"
+main = "index.ts"
+compatibility_date = "2024-12-01"
+
+[observability]
+enabled = true
