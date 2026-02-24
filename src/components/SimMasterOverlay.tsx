@@ -189,8 +189,8 @@ const SimMasterOverlay: React.FC<SimMasterOverlayProps> = ({ enabled }) => {
         />
       )}
 
-      {/* Main SimMaster panel - bottom right */}
-      <div className="fixed bottom-16 right-2 z-[9999] pointer-events-auto" style={{ maxWidth: 320 }}>
+      {/* Main SimMaster panel - bottom left */}
+      <div className="fixed bottom-16 left-[330px] z-[9999] pointer-events-auto" style={{ maxWidth: 320 }}>
 
         {/* Collapsed state - just a status orb */}
         {!isExpanded && (
