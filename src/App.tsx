@@ -72,7 +72,7 @@ export default function App() {
                 {simMasterEnabled ? 'Disable SimMaster' : 'Enable SimMaster'}
               </button>
               {simMasterEnabled && (
-                <p className="text-xs text-green-400 mt-2 animate-pulse">
+                <p className="text-[10px] text-green-400 mt-2 animate-pulse">
                   SimMaster is actively observing the simulation...
                 </p>
               )}
@@ -80,11 +80,11 @@ export default function App() {
           </div>
 
           {/* Center - Hero Gauge + Monitor */}
-          <div className="flex-1 flex flex-col min-w-0">
+          <div className="flex-1 flex flex-col overflow-hidden relative">
             {/* Compact vitals monitor strip at top */}
-            <MonitorPanel vitals={trendData.map((t: { vitals: unknown }) => t.vitals)} />
+            <MonitorPanel vitals={useSimStore.getState().vitals} history={trendData.map(t => t.vitals)} />
             {/* HERO: Giant Sedation Gauge - takes up most of center */}
-            <div className="flex-1 flex items-center justify-center">
+            <div className="flex-1 overflow-y-auto">
               <SedationGauge />
             </div>
           </div>
