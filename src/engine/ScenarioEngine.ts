@@ -140,7 +140,7 @@ export class ScenarioEngine {
   awaitingAnswer: { stepId: string; question: ScenarioQuestion } | null = null;
   awaitingContinue: { stepId: string } | null = null;
   private started = false;
-    private awaitingContinueSince = 0;
+  private lastStepFiredAt = 0;
 
   loadScenario(scenario: InteractiveScenario) {
     this.scenario = scenario;
@@ -150,7 +150,7 @@ export class ScenarioEngine {
         this.physioStepEligibleSince = {};
     this.awaitingAnswer = null;
     this.awaitingContinue = null;
-        this.awaitingContinueSince = 0;
+    this.lastStepFiredAt = 0;
     this.started = false;
     // Reset sim and select patient archetype
     const sim = useSimStore.getState();
@@ -353,19 +353,10 @@ export class ScenarioEngine {
   private evaluateTriggers() {
     if (!this.scenario) return;
 
-        // Auto-continue: if awaitingContinue set but not yet tracked, start timer
-    if (this.awaitingContinue && this.awaitingContinueSince === 0) {
-      this.awaitingContinueSince = this.scenarioTimeSeconds;
-    }
-    // Auto-continue timeout: if waiting > 20s, auto-advance
-    if (this.awaitingContinue && this.awaitingContinueSince > 0) {
-      if (this.scenarioTimeSeconds - this.awaitingContinueSince >= 20) {
-        this.continuePendingStep();
-      }
-    }
-    // Reset tracker when not awaiting
-    if (!this.awaitingContinue) this.awaitingContinueSince = 0;
-    
+    // Cooldown: skip non-physiology triggers within 5 scenario-seconds of the last
+    // fired step to prevent rapid progression. on_physiology safety triggers are exempt.
+    const cooldownActive = this.scenarioTimeSeconds - this.lastStepFiredAt < 5;
+
     const sim = useSimStore.getState();
     const vitals = sim.vitals;
     const moass = sim.moass;
@@ -430,6 +421,8 @@ export class ScenarioEngine {
       }
 
       if (shouldFire) {
+        // Enforce cooldown for non-physiology triggers
+        if (cooldownActive && step.triggerType !== 'on_physiology') continue;
         // If a physiology trigger fires while awaiting continue, auto-clear the pending continue
         if (this.awaitingContinue && step.triggerType === 'on_physiology') {
           this.awaitingContinue = null;
@@ -443,31 +436,6 @@ export class ScenarioEngine {
         this.fireStep(step);
         // Only fire one step per tick to avoid flooding
         return;
-      }
-    }
-
-        // Physiology-step timeout: runs even while awaitingContinue.
-    // If an on_physiology step has been unfired for 60+ scenario-seconds,
-    // auto-fire it (clears awaitingContinue) so the scenario never stalls.
-    if (!this.awaitingAnswer) {
-      const allUnfired = this.scenario.steps.filter(s => !this.firedStepIds.has(s.id));
-      const PHYSIO_TIMEOUT = 60;
-      const pendingPhysio = allUnfired.filter(s => s.triggerType === 'on_physiology');
-      for (const ps of pendingPhysio) {
-        if (!(ps.id in this.physioStepEligibleSince)) {
-            this.physioStepEligibleSince[ps.id] = this.scenarioTimeSeconds;
-                    }
-        const waited = this.scenarioTimeSeconds - this.physioStepEligibleSince[ps.id];
-        if (waited >= PHYSIO_TIMEOUT) {
-          if (this.awaitingContinue) {
-            this.firedStepIds.add(this.awaitingContinue.stepId);
-            this.awaitingContinue = null;
-            useAIStore.getState().setPendingContinue(null);
-          }
-          this.speakAsMillie(['\u26A0\uFE0F Millie is advancing the scenario (physiological event simulated).']);
-          this.fireStep(ps);
-          return;
-        }
       }
     }
 
@@ -491,7 +459,8 @@ export class ScenarioEngine {
         if (
           nextTimedStep &&
           nextTimedStep.triggerTimeSeconds !== undefined &&
-          this.scenarioTimeSeconds < nextTimedStep.triggerTimeSeconds
+          this.scenarioTimeSeconds < nextTimedStep.triggerTimeSeconds &&
+          this.scenarioTimeSeconds - this.lastStepFiredAt >= 10
         ) {
           // Fast-forward to just before the trigger so it fires on the very next tick
           this.scenarioTimeSeconds = nextTimedStep.triggerTimeSeconds - TRIGGER_PRE_FIRE_BUFFER_SECONDS;
@@ -502,7 +471,7 @@ export class ScenarioEngine {
               // Physiology timeout: auto-fire on_physiology steps that have been
         // eligible (all prior steps fired) for over 60 scenario-seconds.
         // This prevents stalls when sim vitals never reach the trigger threshold.
-        const PHYSIO_TIMEOUT_SECONDS = 45;
+        const PHYSIO_TIMEOUT_SECONDS = 60;
         const physioSteps = unfiredSteps.filter(s => s.triggerType === 'on_physiology');
         for (const ps of physioSteps) {
           // Track when this step first became eligible
@@ -530,6 +499,7 @@ export class ScenarioEngine {
   }
 
   private fireStep(step: InteractiveScenarioStep) {
+    this.lastStepFiredAt = this.scenarioTimeSeconds;
     // Clear previous highlights and set new ones if this step has highlights
     const text = step.millieDialogue.join(' ');
 
