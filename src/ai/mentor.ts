@@ -200,7 +200,7 @@ export const autoObserve = (context: {
   pkStates: Record<string, { ce: number }>;
   elapsedSeconds: number;
 }): MentorMessage | null => {
-  const { vitals, moass, eeg, pkStates, elapsedSeconds } = context;
+  const { vitals, moass, eeg: _eeg, pkStates, elapsedSeconds } = context;
   const propCe = pkStates['propofol']?.ce || 0;
   const fentCe = pkStates['fentanyl']?.ce || 0;
   const dexCe = pkStates['dexmedetomidine']?.ce || 0;
