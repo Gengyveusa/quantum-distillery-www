@@ -622,19 +622,24 @@ export class ScenarioEngine {
         // Override a vital sign directly in the store
         sim.overrideVital(action.parameter, action.value);
         break;
-      case 'start_desaturation':
-        // Gradually decrease SpO2 at the specified rate (% per minute) until stopped
+      case 'start_desaturation': {
+        // Gradually decrease SpO2 at the specified rate (% per minute) using elapsed time
         if (this.desaturationTimer) clearInterval(this.desaturationTimer);
+        const startSpo2 = useSimStore.getState().vitals.spo2;
+        const startMs = Date.now();
         this.desaturationTimer = setInterval(() => {
+          const elapsedMin = (Date.now() - startMs) / 60000;
+          const targetSpo2 = Math.max(60, startSpo2 - action.rate * elapsedMin);
           const current = useSimStore.getState().vitals.spo2;
           if (current > 60) {
-            useSimStore.getState().overrideVital('spo2', current - action.rate / 60);
+            useSimStore.getState().overrideVital('spo2', Math.min(current, targetSpo2));
           } else {
             if (this.desaturationTimer) clearInterval(this.desaturationTimer);
             this.desaturationTimer = null;
           }
         }, 1000);
         break;
+      }
     }
   }
 

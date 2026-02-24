@@ -1267,7 +1267,7 @@ export const PEDS_LARYNGOSPASM_ASA1: InteractiveScenario = {
         ],
         correctAnswer: 'Succinylcholine 0.3 mg/kg (7 mg) IV + atropine 0.2 mg IV',
         feedback: {
-          'Succinylcholine 0.3 mg/kg (7 mg) IV + atropine 0.2 mg IV': 'Correct! Subparalytic succinylcholine (0.1-0.3 mg/kg) breaks laryngospasm without full paralysis. Atropine prevents succinylcholine-induced bradycardia.',
+          'Succinylcholine 0.3 mg/kg (7 mg) IV + atropine 0.2 mg IV': 'Correct! Subparalytic succinylcholine (0.1-0.3 mg/kg) breaks laryngospasm without full paralysis. If 0.3 mg/kg fails, escalate to full intubating dose (2 mg/kg IV = 46 mg for this child). Atropine prevents succinylcholine-induced bradycardia.',
           'Wait for the spasm to self-resolve — laryngospasm always breaks eventually': 'Dangerous — with SpO2 82% and bradycardia, waiting risks cardiac arrest in under 60 seconds.',
           'Propofol 2 mg/kg IV to deepen sedation': 'Deepening sedation without securing the airway in complete laryngospasm risks cardiovascular collapse.',
           'Start CPR — the bradycardia indicates cardiac arrest': 'Not yet — bradycardia here is hypoxia-driven vagal response, not cardiac arrest. Treat the hypoxia first.',
