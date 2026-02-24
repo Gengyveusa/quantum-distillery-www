@@ -9,7 +9,7 @@ import { LearningPanelContent } from './LearningPanel';
 import useSimStore from '../store/useSimStore';
 import useAIStore from '../store/useAIStore';
 
-type AITab = 'eeg' | 'mentor' | 'oxyhb' | 'frankstarling' | 'echosim' | 'learn' | 'simmaster';
+type AITab = 'eeg' | 'mentor' | 'oxyhb' | 'frankstarling' | 'echosim' | 'learn';
 
 export const Dashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<AITab | null>(null);
@@ -18,7 +18,7 @@ export const Dashboard: React.FC = () => {
   // Respond to external requests to switch tab (e.g., from ScenarioEngine)
   const storeActiveAITab = useAIStore(s => s.activeAITab);
   useEffect(() => {
-    if (storeActiveAITab === 'mentor' || storeActiveAITab === 'eeg' || storeActiveAITab === 'simmaster') {
+    if (storeActiveAITab === 'mentor' || storeActiveAITab === 'eeg') {
       setActiveTab(storeActiveAITab as AITab);
     }
   }, [storeActiveAITab]);
@@ -34,19 +34,16 @@ export const Dashboard: React.FC = () => {
     digitalTwin: s.digitalTwin,
     fio2: s.fio2,
     airwayDevice: s.airwayDevice,
-        combinedEff: s.combinedEff,
+    combinedEff: s.combinedEff,
   }));
-
-  const simMasterEnabled = useAIStore(s => s.simMasterEnabled);
 
   const tabs: { id: AITab; label: string; icon: string }[] = [
     { id: 'eeg', label: 'EEG', icon: '\ud83e\udde0' },
     { id: 'mentor', label: 'Mentor', icon: '\ud83c\udf93' },
     { id: 'oxyhb', label: 'O\u2082-Hb', icon: '\ud83e\ude78' },
-      { id: 'frankstarling', label: 'F-S', icon: '\u2764' },
+    { id: 'frankstarling', label: 'F-S', icon: '\u2764' },
     { id: 'echosim', label: 'Echo', icon: '\ud83d\udc93' },
     { id: 'learn', label: 'Learn', icon: '\ud83d\udcda' },
-    { id: 'simmaster', label: 'SimMaster', icon: '\ud83c\udfaf' },
   ];
 
   const handleTabClick = (id: AITab) => {
@@ -58,7 +55,7 @@ export const Dashboard: React.FC = () => {
       <div className="fixed right-0 top-0 bottom-12 z-50 flex pointer-events-none">
         {/* Expanded panel */}
         {activeTab && (
-          <div className="pointer-events-auto w-80 bg-gray-900 border-l border-gray-700 shadow-xl flex flex-col overflow-hidden">
+          <div className="pointer-events-auto w-80 bg-gray-900 border-1 border-gray-700 shadow-xl flex flex-col overflow-hidden">
             {/* Panel header */}
             <div className="flex items-center justify-between px-3 py-2 border-b border-gray-700 bg-gray-800">
               <h2 className="text-sm font-bold text-white flex items-center gap-2">
@@ -69,17 +66,17 @@ export const Dashboard: React.FC = () => {
                 className="text-gray-400 hover:text-white text-sm px-1"
                 title="Close"
               >
-                &#x00d7;
+                \u00d7
               </button>
             </div>
             {/* Panel content */}
             <div className="flex-1 overflow-y-auto">
               {activeTab === 'eeg' && (
                 <>
-                  <EEGPanel eegState={simState.eegState} isRunning={simState.isRunning} />
+                  <EEGPanel />
                   {simState.digitalTwin && (
-                    <div className="p-3 border-t border-gray-700 text-[10px]">
-                      <h3 className="text-xs font-bold text-white mb-2">Digital Twin &ndash; Risk Metrics</h3>
+                    <div className="p-3 border-t border-gray-700 text-xs">
+                      <h3 className="text-sm font-bold text-white mb-2">Digital Twin \u2013 Risk Metrics</h3>
                       <div className="space-y-1">
                         <div className="flex justify-between">
                           <span className="text-gray-400">Hypotension Risk</span>
@@ -107,24 +104,30 @@ export const Dashboard: React.FC = () => {
                         </div>
                         <div className="flex justify-between">
                           <span className="text-gray-400">Rhythm</span>
-                          <span className="text-white">{simState.digitalTwin.predictedOutcome.predictedRhythm.replace(/_/g, ' ')}</span>
+                          <span className="text-white">
+                            {simState.digitalTwin.predictedOutcome.predictedRhythm.replace(/_/g, ' ')}
+                          </span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-gray-400">Est. Time to Emergence</span>
-                          <span className="text-white">{simState.digitalTwin.predictedOutcome.timeToEmergence} min</span>
+                          <span className="text-white">
+                            {simState.digitalTwin.predictedOutcome.timeToEmergence} min
+                          </span>
                         </div>
                         {simState.digitalTwin.comorbidities.length > 0 && (
                           <div className="flex justify-between">
                             <span className="text-gray-400">Comorbidities</span>
-                            <span className="text-white">{simState.digitalTwin.comorbidities.join(', ')}</span>
+                            <span className="text-white">
+                              {simState.digitalTwin.comorbidities.join(', ')}
+                            </span>
                           </div>
                         )}
                         {simState.digitalTwin.predictedOutcome.aclsGuidance.length > 0 && (
                           <div className="mt-2">
-                            <span className="text-yellow-400 font-bold">&#x26a0; ACLS Guidance</span>
+                            <span className="text-yellow-400 font-bold">\u26a0 ACLS Guidance</span>
                             {simState.digitalTwin.predictedOutcome.aclsGuidance.map((g: string, i: number) => (
-                              <div key={i} className="text-yellow-300 ml-2">
-                                &#x2022; {g}
+                              <div key={i} className="text-yellow-200 ml-2">
+                                \u2022 {g}
                               </div>
                             ))}
                           </div>
@@ -135,24 +138,16 @@ export const Dashboard: React.FC = () => {
                 </>
               )}
               {activeTab === 'mentor' && (
-                <MentorChat
-                  vitals={simState.vitals}
-                  moass={simState.moass}
-                  eegState={simState.eegState}
-                  digitalTwin={simState.digitalTwin}
-                  eventLog={simState.eventLog}
-                  pkStates={simState.pkStates}
-                  isOpen={mentorOpen}
-                  onToggle={() => setMentorOpen(!mentorOpen)}
-                />
+                <MentorChat isOpen={mentorOpen} onToggle={() => setMentorOpen(!mentorOpen)} />
               )}
               {activeTab === 'oxyhb' && (
                 <div className="p-2">
                   <OxyHbCurve
                     vitals={simState.vitals}
-                    fio2={simState.fio2}
                     patient={simState.patient}
-                    airwayDevice={simState.airwayDevice}
+                    moass={simState.moass}
+                    combinedEff={simState.combinedEff}
+                    pkStates={simState.pkStates}
                   />
                 </div>
               )}
@@ -180,32 +175,6 @@ export const Dashboard: React.FC = () => {
               )}
               {activeTab === 'learn' && (
                 <LearningPanelContent />
-              )}
-              {activeTab === 'simmaster' && (
-                <div className="p-4 text-center text-gray-300">
-                  <p className="text-lg font-bold mb-2">{'\ud83c\udfaf'} SimMaster</p>
-                  <p className="text-xs text-gray-400 mb-3">
-                    Proactive AI observer that highlights critical events on screen in real-time.
-                  </p>
-                  <button
-                    onClick={() => {
-                      const store = useAIStore.getState();
-                      store.setSimMasterEnabled(!store.simMasterEnabled);
-                    }}
-                    className={`px-4 py-2 rounded text-white text-sm font-bold transition-colors ${
-                      simMasterEnabled
-                        ? 'bg-red-600 hover:bg-red-500'
-                        : 'bg-purple-600 hover:bg-purple-500'
-                    }`}
-                  >
-                    {simMasterEnabled ? 'Disable SimMaster' : 'Enable SimMaster'}
-                  </button>
-                  {simMasterEnabled && (
-                    <p className="text-[10px] text-green-400 mt-2 animate-pulse">
-                      SimMaster is actively observing the simulation...
-                    </p>
-                  )}
-                </div>
               )}
             </div>
           </div>
