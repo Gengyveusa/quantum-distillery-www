@@ -406,7 +406,8 @@ export class ScenarioEngine {
       const pendingPhysio = allUnfired.filter(s => s.triggerType === 'on_physiology');
       for (const ps of pendingPhysio) {
         if (!(ps.id in this.physioStepEligibleSince)) {
-PHYSIO_TIMEOUT_SECONDS        }
+            this.physioStepEligibleSince[ps.id] = this.scenarioTimeSeconds;
+                    }
         const waited = this.scenarioTimeSeconds - this.physioStepEligibleSince[ps.id];
         if (waited >= PHYSIO_TIMEOUT) {
           if (this.awaitingContinue) {
