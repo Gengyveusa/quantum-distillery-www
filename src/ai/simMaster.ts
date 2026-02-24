@@ -65,16 +65,16 @@ export const CLINICAL_RANGES: Record<string, ClinicalRange> = {
   },
   moass: {
     label: 'MOASS', unit: '/5',
-    normal: [2, 4],
-    warning_low: 1, warning_high: 5,
+    normal: [2, 5],
+    warning_low: 1,
     danger_low: 0,
     critical_low: 0,
   },
   bis: {
     label: 'BIS Index', unit: '',
-    normal: [40, 60],
-    warning_low: 30, warning_high: 70,
-    danger_low: 20, danger_high: 80,
+    normal: [40, 100],
+    warning_low: 30,
+    danger_low: 20,
     critical_low: 10,
   },
 };
@@ -93,6 +93,14 @@ export function assessParam(key: string, value: number): ClinicalStatus {
 }
 
 // ---------------------------------------------------------------------------
+// Helper: round a vital value for display
+// ---------------------------------------------------------------------------
+function rv(v: number, decimals = 0): number {
+  const f = Math.pow(10, decimals);
+  return Math.round(v * f) / f;
+}
+
+// ---------------------------------------------------------------------------
 // Screen region map
 // ---------------------------------------------------------------------------
 
@@ -104,15 +112,15 @@ export interface ScreenRegion {
 }
 
 export const SCREEN_REGIONS: Record<string, ScreenRegion> = {
-  hr_display:   { id: 'hr_display',   label: 'Heart Rate',   selector: '[data-region="hr"]',   description: 'Heart rate display' },
-  bp_display:   { id: 'bp_display',   label: 'Blood Pressure', selector: '[data-region="bp"]', description: 'Blood pressure display' },
-  spo2_display: { id: 'spo2_display', label: 'SpO2',         selector: '[data-region="spo2"]', description: 'Oxygen saturation' },
-  rr_display:   { id: 'rr_display',   label: 'Resp Rate',    selector: '[data-region="rr"]',   description: 'Respiratory rate' },
-  etco2_display:{ id: 'etco2_display',label: 'EtCO2',        selector: '[data-region="etco2"]', description: 'End-tidal CO2' },
-  moass_gauge:  { id: 'moass_gauge',  label: 'MOASS',        selector: '[data-region="moass"]', description: 'Sedation depth gauge' },
-  radar_chart:  { id: 'radar_chart',  label: 'Radar',        selector: '[data-region="radar"]', description: 'Drug concentration radar' },
-  ecg_trace:    { id: 'ecg_trace',    label: 'ECG',          selector: '[data-region="ecg"]',   description: 'ECG waveform' },
-  drug_panel:   { id: 'drug_panel',   label: 'Drug Panel',   selector: '[data-region="drugs"]', description: 'Drug bolus controls' },
+  hr_display:   { id: 'hr_display',   label: 'Heart Rate',      selector: '[data-region="hr"]',    description: 'Heart rate display' },
+  bp_display:   { id: 'bp_display',   label: 'Blood Pressure',  selector: '[data-region="bp"]',    description: 'Blood pressure display' },
+  spo2_display: { id: 'spo2_display', label: 'SpO2',            selector: '[data-region="spo2"]',  description: 'Oxygen saturation' },
+  rr_display:   { id: 'rr_display',   label: 'Resp Rate',       selector: '[data-region="rr"]',    description: 'Respiratory rate' },
+  etco2_display:{ id: 'etco2_display',label: 'EtCO2',           selector: '[data-region="etco2"]', description: 'End-tidal CO2' },
+  moass_gauge:  { id: 'moass_gauge',  label: 'MOASS',            selector: '[data-region="moass"]', description: 'Sedation depth gauge' },
+  radar_chart:  { id: 'radar_chart',  label: 'Radar',            selector: '[data-region="radar"]', description: 'Drug concentration radar' },
+  ecg_trace:    { id: 'ecg_trace',    label: 'ECG',              selector: '[data-region="ecg"]',   description: 'ECG waveform' },
+  drug_panel:   { id: 'drug_panel',   label: 'Drug Panel',       selector: '[data-region="drugs"]', description: 'Drug bolus controls' },
 };
 
 // ---------------------------------------------------------------------------
@@ -146,15 +154,15 @@ export function assessAllVitals(
   _pkStates?: Record<string, { ce: number }>
 ): VitalAssessment[] {
   const results: VitalAssessment[] = [
-    { param: 'hr',   value: vitals.hr,   status: assessParam('hr', vitals.hr),     label: 'HR',   unit: 'bpm' },
-    { param: 'spo2', value: vitals.spo2, status: assessParam('spo2', vitals.spo2), label: 'SpO2', unit: '%' },
-    { param: 'sbp',  value: vitals.sbp,  status: assessParam('sbp', vitals.sbp),   label: 'SBP',  unit: 'mmHg' },
-    { param: 'rr',   value: vitals.rr,   status: assessParam('rr', vitals.rr),     label: 'RR',   unit: '/min' },
-    { param: 'etco2',value: vitals.etco2,status: assessParam('etco2', vitals.etco2),label: 'EtCO2',unit: 'mmHg' },
-    { param: 'moass',value: moass,       status: assessParam('moass', moass),       label: 'MOASS',unit: '/5' },
+    { param: 'hr',   value: rv(vitals.hr),   status: assessParam('hr', vitals.hr),     label: 'HR',    unit: 'bpm' },
+    { param: 'spo2', value: rv(vitals.spo2),  status: assessParam('spo2', vitals.spo2), label: 'SpO2',  unit: '%' },
+    { param: 'sbp',  value: rv(vitals.sbp),   status: assessParam('sbp', vitals.sbp),   label: 'SBP',   unit: 'mmHg' },
+    { param: 'rr',   value: rv(vitals.rr),    status: assessParam('rr', vitals.rr),     label: 'RR',    unit: '/min' },
+    { param: 'etco2',value: rv(vitals.etco2),  status: assessParam('etco2', vitals.etco2),label: 'EtCO2', unit: 'mmHg' },
+    { param: 'moass',value: moass,             status: assessParam('moass', moass),       label: 'MOASS', unit: '/5' },
   ];
   if (eeg) {
-    results.push({ param: 'bis', value: eeg.bisIndex, status: assessParam('bis', eeg.bisIndex), label: 'BIS', unit: '' });
+    results.push({ param: 'bis', value: rv(eeg.bisIndex), status: assessParam('bis', eeg.bisIndex), label: 'BIS', unit: '' });
   }
   return results;
 }
@@ -164,8 +172,13 @@ export function assessAllVitals(
 // ---------------------------------------------------------------------------
 
 const PARAM_TO_TARGET: Record<string, string> = {
-  hr: 'hr_display', spo2: 'spo2_display', sbp: 'bp_display',
-  rr: 'rr_display', etco2: 'etco2_display', moass: 'moass_gauge', bis: 'ecg_trace',
+  hr: 'hr_display',
+  spo2: 'spo2_display',
+  sbp: 'bp_display',
+  rr: 'rr_display',
+  etco2: 'etco2_display',
+  moass: 'moass_gauge',
+  bis: 'ecg_trace',
 };
 
 interface ClinicalMessage {
@@ -180,55 +193,41 @@ interface ClinicalMessage {
 const CLINICAL_MESSAGES: ClinicalMessage[] = [
   // CRITICAL - immediate life threats
   { param: 'rr', status: 'critical', condition: v => v === 0, priority: 100,
-    message: () => 'APNEA! No respiratory effort detected. Bag-mask ventilate immediately!',
-    target: 'rr_display' },
+    message: () => 'APNEA! No respiratory effort detected. Bag-mask ventilate immediately!', target: 'rr_display' },
   { param: 'spo2', status: 'critical', condition: v => v <= 80, priority: 99,
-    message: v => `CRITICAL HYPOXIA: SpO2 ${v}%! Immediate airway intervention required.`,
-    target: 'spo2_display' },
+    message: v => `CRITICAL HYPOXIA: SpO2 ${rv(v)}%! Immediate airway intervention required.`, target: 'spo2_display' },
   { param: 'hr', status: 'critical', condition: v => v <= 30 || v >= 150, priority: 98,
-    message: v => v <= 30 ? `CRITICAL BRADYCARDIA: HR ${v}. Push atropine 1mg IV NOW.` : `CRITICAL TACHYCARDIA: HR ${v}. Assess for V-tach, consider amiodarone.`,
-    target: 'hr_display' },
+    message: v => rv(v) <= 30
+      ? `CRITICAL BRADYCARDIA: HR ${rv(v)}. Push atropine 1mg IV NOW.`
+      : `CRITICAL TACHYCARDIA: HR ${rv(v)}. Assess for V-tach, consider amiodarone.`, target: 'hr_display' },
   { param: 'sbp', status: 'critical', condition: v => v <= 60, priority: 97,
-    message: v => `CARDIOVASCULAR COLLAPSE: SBP ${v}mmHg. Vasopressors + fluid resuscitation NOW.`,
-    target: 'bp_display' },
+    message: v => `CARDIOVASCULAR COLLAPSE: SBP ${rv(v)}mmHg. Vasopressors + fluid resuscitation NOW.`, target: 'bp_display' },
   { param: 'etco2', status: 'critical', condition: v => v >= 80, priority: 96,
-    message: v => `SEVERE HYPERCARBIA: EtCO2 ${v}mmHg. Respiratory failure - assist ventilation!`,
-    target: 'etco2_display' },
+    message: v => `SEVERE HYPERCARBIA: EtCO2 ${rv(v)}mmHg. Respiratory failure - assist ventilation!`, target: 'etco2_display' },
   // DANGER - requires immediate attention
   { param: 'spo2', status: 'danger', condition: v => v <= 88, priority: 90,
-    message: v => `DESATURATION: SpO2 ${v}%. Increase FiO2, jaw thrust, consider airway adjunct.`,
-    target: 'spo2_display' },
+    message: v => `DESATURATION: SpO2 ${rv(v)}%. Increase FiO2, jaw thrust, consider airway adjunct.`, target: 'spo2_display' },
   { param: 'rr', status: 'danger', condition: v => v <= 5 && v > 0, priority: 89,
-    message: v => `Severe respiratory depression: RR ${v}/min. Assess for opioid overdose.`,
-    target: 'rr_display' },
+    message: v => `Severe respiratory depression: RR ${rv(v)}/min. Assess for opioid overdose.`, target: 'rr_display' },
   { param: 'sbp', status: 'danger', condition: v => v <= 75, priority: 88,
-    message: v => `Significant hypotension: SBP ${v}mmHg. Fluid bolus 250-500mL, reduce propofol.`,
-    target: 'bp_display' },
+    message: v => `Significant hypotension: SBP ${rv(v)}mmHg. Fluid bolus 250-500mL, reduce propofol.`, target: 'bp_display' },
   { param: 'hr', status: 'danger', condition: v => v <= 40, priority: 87,
-    message: v => `Bradycardia: HR ${v}bpm. Atropine 0.5mg IV if symptomatic.`,
-    target: 'hr_display' },
+    message: v => `Bradycardia: HR ${rv(v)}bpm. Atropine 0.5mg IV if symptomatic.`, target: 'hr_display' },
   { param: 'etco2', status: 'danger', condition: v => v >= 60, priority: 86,
-    message: v => `Hypercarbia: EtCO2 ${v}mmHg. Inadequate ventilation - stimulate breathing.`,
-    target: 'etco2_display' },
+    message: v => `Hypercarbia: EtCO2 ${rv(v)}mmHg. Inadequate ventilation - stimulate breathing.`, target: 'etco2_display' },
   { param: 'moass', status: 'danger', condition: v => v === 0, priority: 85,
-    message: () => 'Patient is UNRESPONSIVE (MOASS 0). Verify airway, check drug levels.',
-    target: 'moass_gauge' },
+    message: () => 'Patient is UNRESPONSIVE (MOASS 0). Verify airway, check drug levels.', target: 'moass_gauge' },
   // WARNING - trending abnormal
   { param: 'spo2', status: 'warning', condition: v => v <= 92, priority: 70,
-    message: v => `SpO2 trending down to ${v}%. Monitor airway patency, increase O2.`,
-    target: 'spo2_display' },
+    message: v => `SpO2 trending down to ${rv(v)}%. Monitor airway patency, increase O2.`, target: 'spo2_display' },
   { param: 'rr', status: 'warning', condition: v => v <= 8, priority: 69,
-    message: v => `Respiratory rate low at ${v}/min. Watch for further depression.`,
-    target: 'rr_display' },
+    message: v => `Respiratory rate low at ${rv(v)}/min. Watch for further depression.`, target: 'rr_display' },
   { param: 'sbp', status: 'warning', condition: v => v <= 85, priority: 68,
-    message: v => `BP trending low: ${v}mmHg. Consider reducing sedative infusion rate.`,
-    target: 'bp_display' },
+    message: v => `BP trending low: ${rv(v)}mmHg. Consider reducing sedative infusion rate.`, target: 'bp_display' },
   { param: 'hr', status: 'warning', condition: v => v <= 50, priority: 67,
-    message: v => `Heart rate trending low: ${v}bpm. May be drug-related.`,
-    target: 'hr_display' },
+    message: v => `Heart rate trending low: ${rv(v)}bpm. May be drug-related.`, target: 'hr_display' },
   { param: 'etco2', status: 'warning', condition: v => v >= 50, priority: 66,
-    message: v => `EtCO2 elevated: ${v}mmHg. Hypoventilation developing.`,
-    target: 'etco2_display' },
+    message: v => `EtCO2 elevated: ${rv(v)}mmHg. Hypoventilation developing.`, target: 'etco2_display' },
 ];
 
 // ---------------------------------------------------------------------------
@@ -245,7 +244,10 @@ interface SimSnapshot {
 let lastSnapshot: SimSnapshot | null = null;
 
 export function hasSignificantChange(current: SimSnapshot): boolean {
-  if (!lastSnapshot) { lastSnapshot = current; return true; }
+  if (!lastSnapshot) {
+    lastSnapshot = current;
+    return true;
+  }
   const prev = lastSnapshot;
   const changed =
     Math.abs(current.vitals.hr - prev.vitals.hr) > 8 ||
@@ -255,7 +257,8 @@ export function hasSignificantChange(current: SimSnapshot): boolean {
     Math.abs(current.vitals.etco2 - prev.vitals.etco2) > 5 ||
     current.moass !== prev.moass ||
     current.vitals.spo2 < 93 ||
-    current.vitals.hr < 50 || current.vitals.hr > 120 ||
+    current.vitals.hr < 50 ||
+    current.vitals.hr > 120 ||
     current.vitals.sbp < 85 ||
     current.vitals.rr <= 6 ||
     current.vitals.etco2 > 55;
@@ -299,13 +302,19 @@ export function generateObservation(
     if (propCe > 5) {
       return {
         message: `Propofol Ce ${propCe.toFixed(1)} mcg/mL - very high. Risk of burst suppression and hemodynamic compromise.`,
-        target: 'drug_panel', severity: 'warning', action: 'point', timestamp: Date.now(),
+        target: 'drug_panel',
+        severity: 'warning',
+        action: 'point',
+        timestamp: Date.now(),
       };
     }
     if (fentCe > 0.003 && vitals.rr < 10) {
       return {
-        message: `Opioid-hypnotic synergy: Fentanyl Ce ${(fentCe * 1000).toFixed(1)}ng/mL with RR ${vitals.rr}. Monitor closely.`,
-        target: 'rr_display', severity: 'warning', action: 'highlight', timestamp: Date.now(),
+        message: `Opioid-hypnotic synergy: Fentanyl Ce ${(fentCe * 1000).toFixed(1)}ng/mL with RR ${rv(vitals.rr)}. Monitor closely.`,
+        target: 'rr_display',
+        severity: 'warning',
+        action: 'highlight',
+        timestamp: Date.now(),
       };
     }
   }
@@ -314,12 +323,15 @@ export function generateObservation(
   if (abnormal.length === 0) {
     const msgs = [
       `All vitals in normal range. MOASS ${moass}/5. Good sedation management.`,
-      `Patient stable. HR ${vitals.hr}, SpO2 ${vitals.spo2}%, BP ${vitals.sbp}. Continue monitoring.`,
+      `Patient stable. HR ${rv(vitals.hr)}, SpO2 ${rv(vitals.spo2)}%, BP ${rv(vitals.sbp)}. Continue monitoring.`,
       `Sedation depth appropriate (MOASS ${moass}/5). Vitals within target ranges.`,
     ];
     return {
       message: msgs[Math.floor(Date.now() / 10000) % msgs.length],
-      target: 'moass_gauge', severity: 'info', action: 'highlight', timestamp: Date.now(),
+      target: 'moass_gauge',
+      severity: 'info',
+      action: 'highlight',
+      timestamp: Date.now(),
     };
   }
 
@@ -343,4 +355,11 @@ export function fallbackAnnotation(): SimMasterAnnotation {
   return { message: 'Observing...', target: 'moass_gauge', severity: 'info', action: 'highlight', timestamp: Date.now() };
 }
 
-export default { generateObservation, assessAllVitals, assessParam, hasSignificantChange, SCREEN_REGIONS, CLINICAL_RANGES };
+export default {
+  generateObservation,
+  assessAllVitals,
+  assessParam,
+  hasSignificantChange,
+  SCREEN_REGIONS,
+  CLINICAL_RANGES,
+};
