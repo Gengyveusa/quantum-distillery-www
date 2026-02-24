@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import useSimStore from './store/useSimStore';
+import useAIStore from './store/useAIStore';
 import PatientBanner from './components/PatientBanner';
 import PatientSelector from './components/PatientSelector';
 import DrugPanel from './components/DrugPanel';
@@ -14,7 +15,6 @@ import EventLog from './components/EventLog';
 import TutorialOverlay from './components/TutorialOverlay';
 import SedationGauge from './components/SedationGauge';
 import SimMasterOverlay from './components/SimMasterOverlay';
-import useAIStore from './store/useAIStore';
 import { Dashboard } from './components/Dashboard';
 
 export default function App() {
@@ -22,7 +22,7 @@ export default function App() {
   const [showTutorial, setShowTutorial] = useState(false);
   const [trendsExpanded, setTrendsExpanded] = useState(false);
   const [airwayExpanded, setAirwayExpanded] = useState(false);
-    const simMasterEnabled = useAIStore(s => s.simMasterEnabled);
+  const simMasterEnabled = useAIStore(s => s.simMasterEnabled);
 
   useEffect(() => {
     if (!isRunning) return;
@@ -82,19 +82,15 @@ export default function App() {
               <button
                 onClick={() => setAirwayExpanded(true)}
                 className="h-full w-10 flex items-center justify-center bg-gray-800/60 hover:bg-gray-700/80 transition-colors group"
-                title="Show Airway & O₂"
+                title="Show Airway & O&#x2082;"
               >
-                <span className="writing-mode-vertical text-xs text-gray-400 group-hover:text-cyan-400 whitespace-nowrap tracking-wider uppercase"
-                  style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}
-                >
-                  Airway
-                </span>
+                <span className="text-xs text-gray-400 group-hover:text-cyan-400 whitespace-nowrap tracking-wider uppercase" style={{ writingMode: 'vertical-rl' as const, textOrientation: 'mixed' as const }}>Airway</span>
               </button>
             )}
             {airwayExpanded && (
               <div className="flex flex-col h-full bg-sim-panel">
                 <div className="flex items-center justify-between px-2 py-1 border-b border-gray-700">
-                  <span className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Airway & O₂</span>
+                  <span className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Airway & O&#x2082;</span>
                   <button
                     onClick={() => setAirwayExpanded(false)}
                     className="text-gray-400 hover:text-white text-sm px-1"
@@ -103,7 +99,7 @@ export default function App() {
                     &laquo;
                   </button>
                 </div>
-                <div className="flex-1 overflow-y-auto p-2">
+                <div className="flex-1 overflow-y-auto">
                   <InterventionPanel />
                 </div>
               </div>
@@ -115,7 +111,7 @@ export default function App() {
             {/* Trends Panel - collapsible side drawer */}
             <div
               className={`transition-all duration-300 ease-in-out border-l border-gray-700 overflow-hidden flex flex-col ${
-                trendsExpanded ? 'w-96' : 'w-10'
+                trendsExpanded ? 'w-80' : 'w-10'
               }`}
             >
               {/* Collapsed: vertical tab button */}
@@ -125,14 +121,9 @@ export default function App() {
                   className="h-full w-10 flex items-center justify-center bg-gray-800/60 hover:bg-gray-700/80 transition-colors group"
                   title="Show Trend Graphs"
                 >
-                  <span className="writing-mode-vertical text-xs text-gray-400 group-hover:text-cyan-400 whitespace-nowrap tracking-wider uppercase"
-                    style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}
-                  >
-                    Trends
-                  </span>
+                  <span className="text-xs text-gray-400 group-hover:text-cyan-400 whitespace-nowrap tracking-wider uppercase" style={{ writingMode: 'vertical-rl' as const, textOrientation: 'mixed' as const }}>Trends</span>
                 </button>
               )}
-
               {/* Expanded: full trend panel */}
               {trendsExpanded && (
                 <div className="flex flex-col h-full bg-sim-panel">
@@ -163,16 +154,16 @@ export default function App() {
         {/* Bottom Control Bar */}
         <ControlBar />
       </div>
-              {/* AI Dashboard */}
-        <div className="fixed bottom-20 right-4 z-40">
-          <Dashboard />
-        </div>
+          {/* AI Dashboard */}
+          <div className="fixed bottom-20 right-4 z-40">
+            <Dashboard />
+          </div>
       {showTutorial && (
         <TutorialOverlay
           onClose={() => setShowTutorial(false)}
         />
       )}
-            <SimMasterOverlay enabled={simMasterEnabled} />
+      <SimMasterOverlay enabled={simMasterEnabled} />
     </>
   );
 }
