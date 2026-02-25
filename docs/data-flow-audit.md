@@ -28,12 +28,12 @@ ALL components re-render from store (pure consumers)
 ### OxyHbCurve.tsx
 - **Reads from props:** `vitals` (spo2, etco2), `fio2`, `patient`, `airwayDevice`
 - **Independent computation:** YES — estimates PaO2 from etco2 and fio2 using alveolar gas equation
-- **Status:** Uses vitals.spo2 from store as the current operating point (correct). PaO2 estimation is visualization-only.
+- **Status:** ✅ Uses vitals.spo2 from store as the current operating point (correct). PaO2 estimation is visualization-only.
 
 ### PhysiologyAvatar.tsx
 - **Reads from props:** `vitals`, `moass`, `combinedEff`, `patient`, `rhythm`
 - **Independent computation:** YES — computes cardioState from vitals using local `computeCardioState()`
-- **Status:** Reads canonical vitals from store; local cardioState derivation is for display only.
+- **Status:** ✅ Reads canonical vitals from store; local cardioState derivation is for display only. Chest rise = vitals.rr, skin color = vitals.spo2 thresholds (>94 normal, 90-94 pale, <90 cyanotic).
 
 ### SedationGauge.tsx
 - **Reads from store:** `combinedEff`, `moass`, `pkStates`, `vitals`, `patient`
@@ -46,9 +46,14 @@ ALL components re-render from store (pure consumers)
 - **Status:** ✅ Pure consumer
 
 ### MonitorPanel.tsx
-- **Reads from props:** `vitals`, `history`; also reads `isRunning` from store
+- **Reads from props:** `vitals`, `history`; reads `isRunning` and `emergencyState` from store
 - **Independent computation:** YES — generates ECG/pleth/capno waveforms from vitals
-- **Status:** Waveform generation is visualization-only; uses canonical vitals.rhythm from store for ECG morphology.
+- **Status:** ✅ Waveform generation is visualization-only; uses canonical vitals.rhythm from store for ECG morphology. SpO2 pleth amplitude scales with pulse pressure (SBP-DBP). Capno flatlines when rr===0. **Alarm flash and audio alarms now driven by `emergencyState` from store (FIXED).**
+
+### GhostDosePreview.tsx
+- **Reads from store:** `pkStates`, `infusions`, `patient`, `vitals`, `fio2`, `interventions`
+- **Independent computation:** NO — uses `predictForward()` → `calculateVitals()` (same physics engine)
+- **Status:** ✅ Forward simulation now passes current `interventions` from store to `calculateVitals()`.
 
 ## Known Issues Fixed
 
@@ -82,6 +87,14 @@ interface EmergencyState {
 
 ### 3. Scenario Overrides Support (ADDED)
 `calculateVitals()` now accepts `scenarioOverrides?: Partial<Vitals>` applied last, after all physiological calculations. This lets ScenarioEngine force-set specific vital parameters that propagate through the system.
+
+### 4. VitalCoherenceMonitor Alarm Unification (FIXED)
+**Before:** VitalCoherenceMonitor re-evaluated individual vital thresholds independently (polling every 2s), duplicating the logic in `checkAlarms()`.
+**After:** VitalCoherenceMonitor now reads `activeAlarms` from the store — alarms computed by `checkAlarms()` in `tick()` — and uses those as the trigger condition for mentor messages. This ensures ONE alarm evaluation system drives both the display and the mentor.
+
+### 5. GhostDosePreview Interventions (FIXED)
+**Before:** `predictForward()` called `calculateVitals()` without passing current interventions.
+**After:** `predictForward()` accepts an optional `interventions` parameter, and `GhostDosePreview` passes `state.interventions` from the store, so forward simulations respect active airway interventions.
 
 ## Remaining Divergences (Future Work)
 
