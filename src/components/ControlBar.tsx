@@ -1,9 +1,24 @@
+import { useState, useEffect } from 'react';
 import useSimStore from '../store/useSimStore';
 import { scenarioEngine } from '../engine/ScenarioEngine';
+import { audioManager } from '../utils/audio';
 const SPEED_OPTIONS = [0.5, 1, 2, 5, 10];
 
 export default  function ControlBar() {
   const { isRunning, speedMultiplier, elapsedSeconds, toggleRunning, reset, setSpeed, isScenarioActive } = useSimStore();
+  const [isMuted, setIsMuted] = useState(false);
+  const [silenceRemaining, setSilenceRemaining] = useState(0);
+
+  // Tick down the silence countdown display every second
+  useEffect(() => {
+    if (silenceRemaining <= 0) return;
+    const iv = setInterval(() => {
+      const remaining = Math.ceil(audioManager.getSilenceRemaining() / 1000);
+      setSilenceRemaining(remaining);
+      if (remaining <= 0) clearInterval(iv);
+    }, 500);
+    return () => clearInterval(iv);
+  }, [silenceRemaining]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -11,11 +26,34 @@ export default  function ControlBar() {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const handlePlayPause = () => {
+    if (!isRunning) {
+      // Starting — init AudioContext on this user gesture to satisfy browser policy
+      audioManager.init();
+    } else {
+      // Pausing
+      audioManager.stopAll();
+    }
+    toggleRunning();
+  };
+
   const handleReset = () => {
+    audioManager.stopAll();
     if (isScenarioActive) {
       scenarioEngine.stop();
     }
     reset();
+  };
+
+  const handleMuteToggle = () => {
+    const newMuted = !isMuted;
+    setIsMuted(newMuted);
+    audioManager.setMuted(newMuted);
+  };
+
+  const handleSilenceAlarms = () => {
+    audioManager.silenceAlarms(60000);
+    setSilenceRemaining(60);
   };
 
   return (
@@ -23,7 +61,7 @@ export default  function ControlBar() {
       <div className="flex items-center gap-2">
         <button
           data-sim-id="play-button"
-          onClick={toggleRunning}
+          onClick={handlePlayPause}
           className={`px-4 py-1.5 rounded font-medium text-sm ${
             isRunning
               ? 'bg-yellow-600 hover:bg-yellow-700 text-white'
@@ -57,6 +95,34 @@ export default  function ControlBar() {
             {s}x
           </button>
         ))}
+      </div>
+
+      {/* Audio controls */}
+      <div className="flex items-center gap-2">
+        <button
+          data-sim-id="mute-button"
+          onClick={handleMuteToggle}
+          title={isMuted ? 'Unmute audio' : 'Mute audio'}
+          className={`px-2 py-1.5 rounded text-sm font-medium transition-colors ${
+            isMuted
+              ? 'bg-gray-700 text-gray-400 hover:bg-gray-600'
+              : 'bg-gray-700 text-white hover:bg-gray-600'
+          }`}
+        >
+          {isMuted ? '🔇' : '🔊'}
+        </button>
+        <button
+          data-sim-id="silence-alarms-button"
+          onClick={handleSilenceAlarms}
+          title="Silence alarms for 60 seconds"
+          className={`px-2 py-1.5 rounded text-xs font-medium transition-colors ${
+            silenceRemaining > 0
+              ? 'bg-amber-700 text-amber-200'
+              : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+          }`}
+        >
+          {silenceRemaining > 0 ? `🔕 ${silenceRemaining}s` : '🔕'}
+        </button>
       </div>
 
       <div className="ml-auto flex items-center gap-4 text-sm">

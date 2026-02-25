@@ -5,6 +5,8 @@ import {
   evaluateECG,
   getRRVariation,
 } from '../engine/ecgWaveformEngine';
+import useSimStore from '../store/useSimStore';
+import { audioManager } from '../utils/audio';
 
 interface MonitorPanelProps {
   vitals: Vitals;
@@ -345,6 +347,7 @@ interface ScaleToast {
 }
 
 export default function MonitorPanel({ vitals, history: _history }: MonitorPanelProps) {
+  const isRunning = useSimStore(s => s.isRunning);
   const ecgCanvasRef = useRef<HTMLCanvasElement>(null);
   const plethCanvasRef = useRef<HTMLCanvasElement>(null);
   const capnoCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -439,6 +442,49 @@ vfibOffsetRef.current += 0.012    }
     const iv = setInterval(() => setAlarmFlash((f: boolean) => !f), 500);
     return () => clearInterval(iv);
   }, [vitals.spo2, vitals.hr, vitals.sbp, vitals.rr]);
+
+  // Audio: stop all audio when simulation stops
+  useEffect(() => {
+    if (!isRunning) {
+      audioManager.stopAll();
+    }
+  }, [isRunning]);
+
+  // Audio: SpO2 pulse tone — update frequency/rate on every vitals change while running
+  useEffect(() => {
+    if (isRunning) {
+      audioManager.updateSpO2Tone(vitals.spo2, vitals.hr);
+    }
+  }, [vitals.spo2, vitals.hr, isRunning]);
+
+  // Audio: alarm tones — trigger/clear based on vital thresholds
+  useEffect(() => {
+    if (!isRunning) {
+      audioManager.stopAlarms();
+      return;
+    }
+    const isCritical =
+      vitals.spo2 < 90 ||
+      vitals.hr < 40 || vitals.hr > 150 ||
+      vitals.rr < 4 ||
+      vitals.etco2 > 60 || vitals.etco2 < 10 ||
+      vitals.sbp < 70;
+    const isWarning =
+      !isCritical && (
+        vitals.spo2 < 94 ||
+        vitals.hr < 50 || vitals.hr > 120 ||
+        vitals.rr < 8 ||
+        vitals.etco2 > 50 ||
+        vitals.sbp < 90
+      );
+    if (isCritical) {
+      audioManager.playCriticalAlarm();
+    } else if (isWarning) {
+      audioManager.playWarningAlarm();
+    } else {
+      audioManager.stopAlarms();
+    }
+  }, [vitals.spo2, vitals.hr, vitals.rr, vitals.etco2, vitals.sbp, isRunning]);
 
   // When HR scale changes, redraw scale column on ECG canvas and force re-init
   useEffect(() => {
