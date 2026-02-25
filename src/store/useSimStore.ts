@@ -1,9 +1,9 @@
 import { create } from 'zustand';
-import { PKState, Vitals, MOASSLevel, LogEntry, Patient, TrendPoint, DrugParams, InfusionState, InterventionType, AirwayDevice } from '../types';
+import { PKState, Vitals, MOASSLevel, LogEntry, Patient, TrendPoint, DrugParams, InfusionState, InterventionType, AirwayDevice, EmergencyState } from '../types';
 import { DRUG_DATABASE } from '../engine/drugs';
 import { createInitialPKState, stepPK } from '../engine/pkModel';
 import { combinedEffect, effectToMOASS } from '../engine/pdModel';
-import { calculateVitals, checkAlarms, BASELINE_VITALS, PATIENT_ARCHETYPES } from '../engine/physiology';
+import { calculateVitals, checkAlarms, BASELINE_VITALS, PATIENT_ARCHETYPES, IVFluidContext } from '../engine/physiology';
 import { generateEEG, EEGState } from '../engine/eegModel';
 import { DigitalTwin, createDigitalTwin, updateTwin } from '../engine/digitalTwin';
 
@@ -100,6 +100,9 @@ interface SimState {
   // Digital Twin (risk predictions)
   digitalTwin: DigitalTwin | null;
 
+  // Emergency state (derived from alarms + rhythm)
+  emergencyState: EmergencyState;
+
   // IV Fluids
   ivFluids: IVFluidState;
 
@@ -179,6 +182,13 @@ const useSimStore = create<SimState>((set, get) => ({
   eegState: null,
   digitalTwin: createDigitalTwin(PATIENT_ARCHETYPES.healthy_adult),
 
+  emergencyState: {
+    level: 'normal',
+    activeAlarms: [],
+    isArrest: false,
+    requiresImmediateIntervention: false,
+  },
+
   ivFluids: {
     activeFluid: null,
     rate: 0,
@@ -221,7 +231,15 @@ const useSimStore = create<SimState>((set, get) => ({
 
     // Calculate new vitals using physiology engine
     const prevRhythm = prevVitals.rhythm ?? 'normal_sinus';
-    const newVitals = calculateVitals(newPkStates, patient, prevVitals, fio2, prevRhythm, state.elapsedSeconds);
+    const ivFluidContext: IVFluidContext = {
+      totalInfused: state.ivFluids.totalInfused,
+      isBolus: state.ivFluids.isBolus,
+      bolusVolume: state.ivFluids.bolusVolume,
+    };
+    const newVitals = calculateVitals(
+      newPkStates, patient, prevVitals, fio2, prevRhythm, state.elapsedSeconds,
+      state.interventions, ivFluidContext
+    );
 
     // Check for alarms
     const activeAlarms = checkAlarms(newVitals);
@@ -302,6 +320,18 @@ const useSimStore = create<SimState>((set, get) => ({
       newIvFluids.totalInfused = state.ivFluids.totalInfused + state.ivFluids.rate / 3600;
     }
 
+    // Compute emergency state from alarms and rhythm
+    const arrestRhythms = ['ventricular_fibrillation', 'ventricular_tachycardia', 'polymorphic_vt', 'asystole', 'pea'];
+    const isArrest = arrestRhythms.includes(newRhythm);
+    const hasDanger = activeAlarms.some(a => a.severity === 'danger');
+    const hasWarning = activeAlarms.some(a => a.severity === 'warning');
+    const newEmergencyState: EmergencyState = {
+      level: isArrest ? 'arrest' : hasDanger ? 'critical' : hasWarning ? 'warning' : 'normal',
+      activeAlarms,
+      isArrest,
+      requiresImmediateIntervention: isArrest || hasDanger,
+    };
+
     set({
       elapsedSeconds: newTime,
       pkStates: newPkStates,
@@ -314,6 +344,7 @@ const useSimStore = create<SimState>((set, get) => ({
       eegState: newEegState,
       digitalTwin: newDigitalTwin,
       ivFluids: newIvFluids,
+      emergencyState: newEmergencyState,
     });
   },
 
@@ -633,6 +664,12 @@ const useSimStore = create<SimState>((set, get) => ({
         totalInfused: 0,
         isBolus: false,
         bolusVolume: 0,
+      },
+      emergencyState: {
+        level: 'normal',
+        activeAlarms: [],
+        isArrest: false,
+        requiresImmediateIntervention: false,
       },
     });
   },

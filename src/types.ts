@@ -175,6 +175,14 @@ export interface GhostDose {
   isActive: boolean;
 }
 
+// Emergency state — derived from active alarms and cardiac rhythm
+export interface EmergencyState {
+  level: 'normal' | 'warning' | 'critical' | 'arrest';
+  activeAlarms: { type: string; message: string; severity: 'warning' | 'danger' }[];
+  isArrest: boolean; // VFib, VTach, asystole, PEA
+  requiresImmediateIntervention: boolean;
+}
+
 // Prediction result for ghost dose / forward simulation
 export interface PredictionResult {
   secondsAhead: number;
