@@ -73,24 +73,25 @@ function isCoveredByScenario(
 interface AlarmEntry { type: string; message: string; severity: 'warning' | 'danger'; }
 
 export class VitalCoherenceMonitor {
-  private timerId: ReturnType<typeof setInterval> | null = null;
+  // Use Zustand store subscription instead of setInterval for unified alarm source
+  private unsubscribe: (() => void) | null = null;
   private cooldowns: Record<string, AlertCooldown> = {};
   private onCriticalAlert: (() => void) | null = null;
 
   start(onCriticalAlert?: () => void) {
-    if (this.timerId) return;
+    if (this.unsubscribe) return;
     this.cooldowns = {};
     // Callback invoked when a critical alert fires while a scenario question is pending.
-    // ScenarioEngine passes a function that clears its `awaitingAnswer` state so scenario
-    // progression can resume after the critical event overrides the stale question.
     this.onCriticalAlert = onCriticalAlert ?? null;
-    this.timerId = setInterval(() => this.tick(), 2000);
+    // Subscribe to store changes — fires on every tick so alarms are processed
+    // in lock-step with the simulation (no separate 2-second polling timer)
+    this.unsubscribe = useSimStore.subscribe((state: { activeAlarms: AlarmEntry[]; vitals: { hr: number; spo2: number; rr: number; etco2: number; sbp: number }; moass: number }) => this.tick(state.activeAlarms, state.vitals, state.moass));
   }
 
   stop() {
-    if (this.timerId) {
-      clearInterval(this.timerId);
-      this.timerId = null;
+    if (this.unsubscribe) {
+      this.unsubscribe();
+      this.unsubscribe = null;
     }
     this.cooldowns = {};
     this.onCriticalAlert = null;
@@ -140,9 +141,7 @@ export class VitalCoherenceMonitor {
     }
   }
 
-  private tick() {
-    const { vitals, moass, activeAlarms } = useSimStore.getState();
-
+  private tick(activeAlarms: AlarmEntry[], vitals: { hr: number; spo2: number; rr: number; etco2: number; sbp: number }, moass: number) {
     // Use canonical activeAlarms from the store (computed by checkAlarms() in tick())
     // instead of re-evaluating individual vital thresholds here.
     // This ensures the VitalCoherenceMonitor and the main alarm system agree.
