@@ -104,10 +104,10 @@ export default function SedationGauge() {
     setActiveGaugeMode(mode);
   }, [mode, setActiveGaugeMode]);
 
-  const size = 800;
+  const size = 640;
   const cy = size / 2;
   const cx = size / 2;  
-  const outerR = 278;
+  const outerR = 222;
   const avatarSize = 1050;
 
   // Get active sedation drugs
@@ -156,7 +156,7 @@ export default function SedationGauge() {
     Math.min(1, combinedEff * 0.5 + activeSynergies.length * 0.2 + (isCrisis ? 0.5 : 0)),
   ];
   const axisCount = radarAxes.length;
-  const radarR = 195;
+  const radarR = 156;
   const radarPoints = radarValues.map((v, i) => {
     const p = polarToCartesian(cx, cy, v * radarR + 30, (i * 360 / axisCount));
     return `${p.x},${p.y}`;
@@ -257,11 +257,11 @@ export default function SedationGauge() {
                 return (
                   <g key={label}>
                     <line x1={cx} y1={cy} x2={p.x} y2={p.y} stroke="#475569" strokeWidth={0.5} />
-                    <text x={lp.x} y={lp.y} fill={radarValues[i] > 0.75 ? '#f97316' : '#94a3b8'} fontSize="20" fontWeight="bold" textAnchor="middle" dominantBaseline="middle" letterSpacing="0.05em">{label}</text>
+                    <text x={lp.x} y={lp.y} fill={radarValues[i] > 0.75 ? '#f97316' : '#94a3b8'} fontSize="16" fontWeight="bold" textAnchor="middle" dominantBaseline="middle" letterSpacing="0.05em">{label}</text>
                     {ticks.map(tick => {
                       const tp = polarToCartesian(cx, cy, tick.norm * radarR + 30, angle);
                       return (
-                        <text key={tick.text} x={tp.x} y={tp.y} fill="#475569" fontSize="12" textAnchor="middle" dominantBaseline="middle">{tick.text}</text>
+                        <text key={tick.text} x={tp.x} y={tp.y} fill="#475569" fontSize="10" textAnchor="middle" dominantBaseline="middle">{tick.text}</text>
                       );
                     })}
                   </g>
@@ -288,9 +288,9 @@ export default function SedationGauge() {
                   <g key={seg.label}>
                     <path d={describeArc(cx, cy, outerR + 4, startA, endA)} fill="none" stroke={seg.color} strokeWidth={8} strokeLinecap="round" opacity={0.7} />
                     {(() => {
-                      const lp = polarToCartesian(cx, cy, outerR + 42, seg.angle);
+                      const lp = polarToCartesian(cx, cy, outerR + 34, seg.angle);
                       return (
-                        <text x={lp.x} y={lp.y} fill={seg.color} fontSize="16" fontWeight="bold" textAnchor="middle" dominantBaseline="middle">{seg.label}</text>
+                        <text x={lp.x} y={lp.y} fill={seg.color} fontSize="13" fontWeight="bold" textAnchor="middle" dominantBaseline="middle">{seg.label}</text>
                       );
                     })()}
                   </g>
@@ -298,7 +298,7 @@ export default function SedationGauge() {
               })}
 
               {/* Inner dark circle background for center */}
-              <circle cx={cx} cy={cy} r={78} fill="#0f172a" opacity={0.8} />
+              <circle cx={cx} cy={cy} r={62} fill="#0f172a" opacity={0.8} />
 
               {/* Drug Petals - 4 quadrant leaf shapes */}
               {petalDrugs.map((drugName, i) => {
@@ -310,7 +310,7 @@ export default function SedationGauge() {
                 const angle = PETAL_ANGLES[i];
                 const color = PETAL_COLORS[drugName] || '#64748b';
                 const isActive = ce > 0.001;
-                const innerR = 82;
+                const innerR = 66;
                 const outerPetalR = innerR + 90 * (isActive ? Math.max(0.3, fillAmount) : 0.15);
                 const lp = polarToCartesian(cx, cy, innerR + 65, angle);
                 const ceLp = polarToCartesian(cx, cy, innerR + 42, angle);
@@ -318,10 +318,10 @@ export default function SedationGauge() {
                   <g key={drugName} {...(drugName === 'propofol' ? { 'data-region': 'propofol' } : {})}>
                     <path d={petalPath(cx, cy, angle, innerR, outerPetalR, 28)} fill={color} opacity={isActive ? 0.6 : 0.15} stroke={color} strokeWidth={isActive ? 1.5 : 0.5} />
                     {/* Drug name */}
-                    <text x={lp.x} y={lp.y} fill={isActive ? color : '#64748b'} fontSize="18" fontWeight="bold" textAnchor="middle" dominantBaseline="middle">{drug ? drug.name : drugName}</text>
+                    <text x={lp.x} y={lp.y} fill={isActive ? color : '#64748b'} fontSize="14" fontWeight="bold" textAnchor="middle" dominantBaseline="middle">{drug ? drug.name : drugName}</text>
                     {/* Ce value */}
                     {isActive && (
-                      <text x={ceLp.x} y={ceLp.y} fill={color} fontSize="14" textAnchor="middle" dominantBaseline="middle">Ce {ce.toFixed(3)}</text>
+                      <text x={ceLp.x} y={ceLp.y} fill={color} fontSize="11" textAnchor="middle" dominantBaseline="middle">Ce {ce.toFixed(3)}</text>
                     )}
                   </g>
                 );
@@ -337,90 +337,90 @@ export default function SedationGauge() {
               {/* === VITAL READOUTS - Aviation Glass Cockpit Style === */}
               {/* HR at 12 o'clock */}
               {(() => {
-                const p = polarToCartesian(cx, cy, outerR + 95, 0);
+                const p = polarToCartesian(cx, cy, outerR + 76, 0);
                 const hrColor = vitals.hr < 45 || vitals.hr > 140 ? '#ef4444' : vitals.hr < 50 || vitals.hr > 120 ? '#f59e0b' : '#22c55e';
                 return (
                   <g>
-                    <circle cx={p.x} cy={p.y + 10} r={38} fill={hrColor} opacity={0.25} />
-                    <text x={p.x} y={p.y - 18} fill="#94a3b8" fontSize="16" fontWeight="bold" textAnchor="middle">HR</text>
-                    <text x={p.x} y={p.y + 10} fill={vitals.hr < 50 || vitals.hr > 120 ? '#ef4444' : '#22c55e'} fontSize="30" fontWeight="bold" textAnchor="middle">{vitals.hr.toFixed(0)}</text>
-                    <text x={p.x} y={p.y + 28} fill="#64748b" fontSize="14" textAnchor="middle">bpm</text>
+                    <circle cx={p.x} cy={p.y + 10} r={30} fill={hrColor} opacity={0.25} />
+                    <text x={p.x} y={p.y - 18} fill="#94a3b8" fontSize="13" fontWeight="bold" textAnchor="middle">HR</text>
+                    <text x={p.x} y={p.y + 10} fill={vitals.hr < 50 || vitals.hr > 120 ? '#ef4444' : '#22c55e'} fontSize="24" fontWeight="bold" textAnchor="middle">{vitals.hr.toFixed(0)}</text>
+                    <text x={p.x} y={p.y + 28} fill="#64748b" fontSize="11" textAnchor="middle">bpm</text>
                   </g>
                 );
               })()}
 
               {/* BP at ~2 o'clock */}
               {(() => {
-                const p = polarToCartesian(cx, cy, outerR + 95, 60);
+                const p = polarToCartesian(cx, cy, outerR + 76, 60);
                 const bpColor = vitals.map < 60 || vitals.map > 110 ? '#ef4444' : vitals.map < 70 ? '#f59e0b' : '#22c55e';
                 return (
                   <g>
-                    <circle cx={p.x} cy={p.y + 10} r={38} fill={bpColor} opacity={0.25} />
-                    <text x={p.x} y={p.y - 18} fill="#94a3b8" fontSize="16" fontWeight="bold" textAnchor="middle">BP</text>
-                    <text x={p.x} y={p.y + 10} fill={vitals.map < 60 ? '#ef4444' : '#22c55e'} fontSize="30" fontWeight="bold" textAnchor="middle">{vitals.sbp.toFixed(0)}/{vitals.dbp.toFixed(0)}</text>
-                    <text x={p.x} y={p.y + 28} fill="#64748b" fontSize="14" textAnchor="middle">MAP {vitals.map.toFixed(0)}</text>
+                    <circle cx={p.x} cy={p.y + 10} r={30} fill={bpColor} opacity={0.25} />
+                    <text x={p.x} y={p.y - 18} fill="#94a3b8" fontSize="13" fontWeight="bold" textAnchor="middle">BP</text>
+                    <text x={p.x} y={p.y + 10} fill={vitals.map < 60 ? '#ef4444' : '#22c55e'} fontSize="24" fontWeight="bold" textAnchor="middle">{vitals.sbp.toFixed(0)}/{vitals.dbp.toFixed(0)}</text>
+                    <text x={p.x} y={p.y + 28} fill="#64748b" fontSize="11" textAnchor="middle">MAP {vitals.map.toFixed(0)}</text>
                   </g>
                 );
               })()}
 
               {/* SpO2 at ~4 o'clock */}
               {(() => {
-                const p = polarToCartesian(cx, cy, outerR + 95, 120);
+                const p = polarToCartesian(cx, cy, outerR + 76, 120);
                 const spo2Color = vitals.spo2 < 90 ? '#ef4444' : vitals.spo2 < 94 ? '#f59e0b' : '#22c55e';
                 return (
                   <g>
-                    <circle cx={p.x} cy={p.y + 10} r={38} fill={spo2Color} opacity={0.25} />
-                    <text x={p.x} y={p.y - 18} fill="#94a3b8" fontSize="16" fontWeight="bold" textAnchor="middle">SpO2</text>
-                    <text x={p.x} y={p.y + 10} fill={vitals.spo2 < 90 ? '#ef4444' : vitals.spo2 < 94 ? '#f59e0b' : '#22c55e'} fontSize="30" fontWeight="bold" textAnchor="middle">{vitals.spo2.toFixed(0)}%</text>
+                    <circle cx={p.x} cy={p.y + 10} r={30} fill={spo2Color} opacity={0.25} />
+                    <text x={p.x} y={p.y - 18} fill="#94a3b8" fontSize="13" fontWeight="bold" textAnchor="middle">SpO2</text>
+                    <text x={p.x} y={p.y + 10} fill={vitals.spo2 < 90 ? '#ef4444' : vitals.spo2 < 94 ? '#f59e0b' : '#22c55e'} fontSize="24" fontWeight="bold" textAnchor="middle">{vitals.spo2.toFixed(0)}%</text>
                   </g>
                 );
               })()}
 
               {/* EtCO2 at ~6 o'clock */}
               {(() => {
-                const p = polarToCartesian(cx, cy, outerR + 95, 180);
+                const p = polarToCartesian(cx, cy, outerR + 76, 180);
                 const etco2Color = vitals.etco2 < 15 || vitals.etco2 > 55 ? '#ef4444' : vitals.etco2 < 20 || vitals.etco2 > 50 ? '#f59e0b' : '#22c55e';
                 return (
                   <g>
-                    <circle cx={p.x} cy={p.y + 10} r={38} fill={etco2Color} opacity={0.25} />
-                    <text x={p.x} y={p.y - 18} fill="#94a3b8" fontSize="16" fontWeight="bold" textAnchor="middle">EtCO2</text>
-                    <text x={p.x} y={p.y + 10} fill={vitals.etco2 > 50 ? '#ef4444' : '#22c55e'} fontSize="30" fontWeight="bold" textAnchor="middle">{vitals.etco2.toFixed(0)}</text>
-                    <text x={p.x} y={p.y + 28} fill="#64748b" fontSize="14" textAnchor="middle">mmHg</text>
+                    <circle cx={p.x} cy={p.y + 10} r={30} fill={etco2Color} opacity={0.25} />
+                    <text x={p.x} y={p.y - 18} fill="#94a3b8" fontSize="13" fontWeight="bold" textAnchor="middle">EtCO2</text>
+                    <text x={p.x} y={p.y + 10} fill={vitals.etco2 > 50 ? '#ef4444' : '#22c55e'} fontSize="24" fontWeight="bold" textAnchor="middle">{vitals.etco2.toFixed(0)}</text>
+                    <text x={p.x} y={p.y + 28} fill="#64748b" fontSize="11" textAnchor="middle">mmHg</text>
                   </g>
                 );
               })()}
 
               {/* RR at ~8 o'clock */}
               {(() => {
-                const p = polarToCartesian(cx, cy, outerR + 95, 240);
+                const p = polarToCartesian(cx, cy, outerR + 76, 240);
                 const rrColor = vitals.rr < 6 || vitals.rr > 30 ? '#ef4444' : vitals.rr < 8 || vitals.rr > 25 ? '#f59e0b' : '#22c55e';
                 return (
                   <g>
-                    <circle cx={p.x} cy={p.y + 10} r={38} fill={rrColor} opacity={0.25} />
-                    <text x={p.x} y={p.y - 18} fill="#94a3b8" fontSize="16" fontWeight="bold" textAnchor="middle">RR</text>
-                    <text x={p.x} y={p.y + 10} fill={vitals.rr < 8 ? '#ef4444' : '#22c55e'} fontSize="30" fontWeight="bold" textAnchor="middle">{vitals.rr.toFixed(0)}</text>
+                    <circle cx={p.x} cy={p.y + 10} r={30} fill={rrColor} opacity={0.25} />
+                    <text x={p.x} y={p.y - 18} fill="#94a3b8" fontSize="13" fontWeight="bold" textAnchor="middle">RR</text>
+                    <text x={p.x} y={p.y + 10} fill={vitals.rr < 8 ? '#ef4444' : '#22c55e'} fontSize="24" fontWeight="bold" textAnchor="middle">{vitals.rr.toFixed(0)}</text>
                   </g>
                 );
               })()}
 
               {/* Forward projection at ~10 o'clock */}
               {(() => {
-                const p = polarToCartesian(cx, cy, outerR + 95, 300);
+                const p = polarToCartesian(cx, cy, outerR + 76, 300);
                 return (
-                  <text x={p.x} y={p.y} fill="#64748b" fontSize="16" fontWeight="bold" textAnchor="middle">2-min Ce</text>
+                  <text x={p.x} y={p.y} fill="#64748b" fontSize="13" fontWeight="bold" textAnchor="middle">2-min Ce</text>
                 );
               })()}
 
               {/* Synergy badge */}
               {activeSynergies.length > 0 && (
-                <text x={cx} y={cy + 68} fill="#f59e0b" fontSize="13" fontWeight="bold" textAnchor="middle">
+                <text x={cx} y={cy + 68} fill="#f59e0b" fontSize="10" fontWeight="bold" textAnchor="middle">
                   {activeSynergies.length > 0 ? 'Benzo-Hypnotic Synergy' : ''}
                 </text>
               )}
 
               {/* Effect % arc */}
               {combinedEff > 0.01 && (
-                <text x={cx} y={cy - 68} fill={gaugeColor} fontSize="15" fontWeight="bold" textAnchor="middle">
+                <text x={cx} y={cy - 68} fill={gaugeColor} fontSize="12" fontWeight="bold" textAnchor="middle">
                   Effect: {(combinedEff * 100).toFixed(0)}%
                 </text>
               )}
@@ -450,7 +450,7 @@ export default function SedationGauge() {
                     {riskAxes.map((label, idx) => {
                       const a = (idx * 360) / 5;
                       const lpt = polarToCartesian(rCx, rCy, rR + 14, a);
-                      return <text key={label} x={lpt.x} y={lpt.y} fill="#94a3b8" fontSize="12" textAnchor="middle" dominantBaseline="middle">{label}</text>;
+                      return <text key={label} x={lpt.x} y={lpt.y} fill="#94a3b8" fontSize="10" textAnchor="middle" dominantBaseline="middle">{label}</text>;
                     })}
                   </g>
                 );
@@ -460,10 +460,10 @@ export default function SedationGauge() {
 
           {/* Center MOASS display - always visible in non-avatar modes */}
           <g>
-            <text x={cx} y={cy - 6} fill={gaugeColor} fontSize="60" fontWeight="bold" textAnchor="middle" dominantBaseline="middle">{moass}</text>
-            <text x={cx} y={cy + 22} fill={gaugeColor} fontSize="18" fontWeight="bold" textAnchor="middle" letterSpacing="0.1em">{MOASS_LABELS[moass]}</text>
+            <text x={cx} y={cy - 6} fill={gaugeColor} fontSize="48" fontWeight="bold" textAnchor="middle" dominantBaseline="middle">{moass}</text>
+            <text x={cx} y={cy + 22} fill={gaugeColor} fontSize="14" fontWeight="bold" textAnchor="middle" letterSpacing="0.1em">{MOASS_LABELS[moass]}</text>
             {isCrisis && (
-              <text x={cx} y={cy + 40} fill="#ef4444" fontSize="17" fontWeight="bold" textAnchor="middle">
+              <text x={cx} y={cy + 40} fill="#ef4444" fontSize="14" fontWeight="bold" textAnchor="middle">
                 {vitals.spo2 < 90 ? '\u26A0 DESAT' : vitals.rr < 6 ? '\u26A0 APNEA' : '\u26A0 CRITICAL'}
               </text>
             )}
