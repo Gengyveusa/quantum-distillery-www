@@ -350,7 +350,7 @@ export class ScenarioEngine {
         this.physioStepEligibleSince = {};
     this.awaitingAnswer = null;
     this.awaitingContinue = null;
-    this.lastStepFiredAt = 0;
+    this.lastStepFiredAt = -10;
     this.started = false;
     if (this.autoAdvanceTimer) { clearTimeout(this.autoAdvanceTimer); this.autoAdvanceTimer = null; }
     // Reset sim and select patient archetype
@@ -642,7 +642,7 @@ export class ScenarioEngine {
       if (shouldFire) {
         // Enforce cooldown for non-physiology triggers; on_step_complete uses 2s cooldown
         const stepCooldown = step.triggerType === 'on_step_complete' ? 2 : cooldownSeconds;
-        if (this.scenarioTimeSeconds - this.lastStepFiredAt < stepCooldown && step.triggerType !== 'on_physiology') continue;
+        if (this.scenarioTimeSeconds - this.lastStepFiredAt < stepCooldown && step.triggerType !== 'on_physiology' && step.triggerType !== 'on_start') continue;
         // If a physiology trigger fires while awaiting continue, auto-clear the pending continue
         if (this.awaitingContinue && step.triggerType === 'on_physiology') {
           this.awaitingContinue = null;
@@ -775,6 +775,7 @@ export class ScenarioEngine {
       // Present question — pause until answered
       this.speakAsMillie(step.millieDialogue);
       this.awaitingAnswer = { stepId: step.id, question: step.question };
+      this.firedStepIds.add(step.id);
       useAIStore.getState().setCurrentQuestion({ stepId: step.id, question: step.question });
       // Part 3: If this is a numeric_range dosing question, unlock the relevant drug
       if (step.question.type === 'numeric_range' && step.simActions) {
