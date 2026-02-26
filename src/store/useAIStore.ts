@@ -64,9 +64,11 @@ interface AIState {
   requestOpenTab: string | null;
   requestGaugeMode: string | null;
 
-  // Conductor / Millie structured chat
+  // Conductor beat system
   structuredMessages: StructuredMessage[];
   vitalAnnotations: VitalAnnotation[];
+  conductorPhase: string | null;
+  millieEmotion: string;
 
   // Actions
   initializeAI: () => void;
@@ -101,6 +103,10 @@ interface AIState {
   clearStructuredMessages: () => void;
   addVitalAnnotation: (ann: VitalAnnotation) => void;
   clearVitalAnnotations: () => void;
+  addStructuredMessage: (message: StructuredMessage) => void;
+  setVitalAnnotations: (annotations: VitalAnnotation[]) => void;
+  clearStructuredMessages: () => void;
+  setMillieEmotion: (emotion: string) => void;
 }
 
 const useAIStore = create<AIState>((set, get) => ({
@@ -132,6 +138,8 @@ const useAIStore = create<AIState>((set, get) => ({
   requestGaugeMode: null,
   structuredMessages: [],
   vitalAnnotations: [],
+  conductorPhase: null,
+  millieEmotion: 'encouraging',
 
   initializeAI: () => {
     const orchestrator = new MultiAgentOrchestrator();
@@ -307,6 +315,21 @@ const useAIStore = create<AIState>((set, get) => ({
 
   clearVitalAnnotations: () => {
     set({ vitalAnnotations: [] });
+  addStructuredMessage: (message) => {
+    const { structuredMessages } = get();
+    set({ structuredMessages: [...structuredMessages, message].slice(-100) });
+  },
+
+  setVitalAnnotations: (annotations) => {
+    set({ vitalAnnotations: annotations });
+  },
+
+  clearStructuredMessages: () => {
+    set({ structuredMessages: [] });
+  },
+
+  setMillieEmotion: (emotion) => {
+    set({ millieEmotion: emotion });
   },
 }));
 
