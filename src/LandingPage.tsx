@@ -55,7 +55,7 @@ export default function LandingPage() {
         <span style={{ fontSize:13, letterSpacing:'.2em', textTransform:'uppercase', color:C.amber, fontFamily:font.sans, fontWeight:700 }}>The Quantum Distillery</span>
         <div style={{ display:'flex', gap:32 }}>
           <a href="https://thequantumdistillery.substack.com" target="_blank" rel="noreferrer" className="qd-link" style={{ color:C.muted, textDecoration:'none', fontSize:13, letterSpacing:'.1em', fontFamily:font.sans, transition:'color .2s' }}>Substack</a>
-          <a href="https://gengyve.com" target="_blank" rel="noreferrer" className="qd-link" style={{ color:C.muted, textDecoration:'none', fontSize:13, letterSpacing:'.1em', fontFamily:font.sans, transition:'color .2s' }}>Gengyve</a>
+          <a href="https://www.gengyveusa.com" target="_blank" rel="noreferrer" className="qd-link" style={{ color:C.muted, textDecoration:'none', fontSize:13, letterSpacing:'.1em', fontFamily:font.sans, transition:'color .2s' }}>Gengyve</a>
           <span onClick={() => navigate('/sim')} className="qd-link" style={{ color:C.muted, cursor:'pointer', fontSize:13, letterSpacing:'.1em', fontFamily:font.sans, transition:'color .2s' }}>SedSim</span>
         </div>
       </nav>
