@@ -66,8 +66,7 @@ export const ScenarioPanel: React.FC = () => {
       useAIStore.getState().addMentorMessage('mentor', '[DEBUG] Scenario play error: ' + msg);
     }
   };
-  };
-
+  
   const handleStopScenario = () => {
     if (USE_CONDUCTOR) {
       conductor.stop();
