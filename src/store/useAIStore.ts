@@ -6,6 +6,7 @@ import { Scenario } from '../ai/scenarioGenerator';
 import { GhostDose, TutorialState } from '../types';
 import type { ScenarioQuestion } from '../engine/ScenarioEngine';
 import type { SimMasterAnnotation } from '../ai/simMaster';
+import type { StructuredMessage, VitalAnnotation } from '../engine/conductor/types';
 
 interface AIState {
   // Orchestrator
@@ -63,6 +64,10 @@ interface AIState {
   requestOpenTab: string | null;
   requestGaugeMode: string | null;
 
+  // Conductor / Millie structured chat
+  structuredMessages: StructuredMessage[];
+  vitalAnnotations: VitalAnnotation[];
+
   // Actions
   initializeAI: () => void;
   startAI: () => void;
@@ -92,6 +97,10 @@ interface AIState {
   switchGaugeMode: (mode: string) => void;
   clearTabRequest: () => void;
   clearGaugeModeRequest: () => void;
+  addStructuredMessage: (msg: StructuredMessage) => void;
+  clearStructuredMessages: () => void;
+  addVitalAnnotation: (ann: VitalAnnotation) => void;
+  clearVitalAnnotations: () => void;
 }
 
 const useAIStore = create<AIState>((set, get) => ({
@@ -121,6 +130,8 @@ const useAIStore = create<AIState>((set, get) => ({
   simMasterAnnotation: null,
   requestOpenTab: null,
   requestGaugeMode: null,
+  structuredMessages: [],
+  vitalAnnotations: [],
 
   initializeAI: () => {
     const orchestrator = new MultiAgentOrchestrator();
@@ -278,6 +289,24 @@ const useAIStore = create<AIState>((set, get) => ({
 
   clearGaugeModeRequest: () => {
     set({ requestGaugeMode: null });
+  },
+
+  addStructuredMessage: (msg) => {
+    const { structuredMessages } = get();
+    set({ structuredMessages: [...structuredMessages, msg].slice(-200) });
+  },
+
+  clearStructuredMessages: () => {
+    set({ structuredMessages: [] });
+  },
+
+  addVitalAnnotation: (ann) => {
+    const { vitalAnnotations } = get();
+    set({ vitalAnnotations: [...vitalAnnotations, ann].slice(-20) });
+  },
+
+  clearVitalAnnotations: () => {
+    set({ vitalAnnotations: [] });
   },
 }));
 
