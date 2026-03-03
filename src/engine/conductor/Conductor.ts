@@ -47,6 +47,7 @@ export interface SimStoreAccessor {
   getElapsedSeconds: () => number;
   getPkPdSensitivity: () => number;
   overrideVital: (parameter: string, value: number) => void;
+  administerBolus: (drug: string, dose: number) => void;
 }
 
 export interface AIStoreAccessor {
@@ -64,6 +65,7 @@ export interface AIStoreAccessor {
     phase: ConductorStep['phase'] | null
   ) => void;
   setScenarioRunning: (running: boolean) => void;
+  setPendingContinue: (pending: { stepId: string; stepLabel: string } | null) => void;
 }
 
 // ─── Conductor Config ─────────────────────────────────────────────────────────
@@ -110,6 +112,7 @@ export class Conductor {
   private completedStepIds = new Set<string>();
   private activeStepId: string | null = null;
   private currentVitalTargets: StepVitalTargets | null = null;
+  private pendingQuestion: { stepId: string; question: import('../ScenarioEngine').ScenarioQuestion } | null = null;
 
   /** Seconds a physiology trigger condition has been continuously met, keyed by stepId. */
   private conditionDurationSecs: Map<string, number> = new Map();
@@ -153,6 +156,7 @@ export class Conductor {
         });
       },
       onQuestion: (question, stepId, _beatId) => {
+        this.pendingQuestion = { stepId, question };
         this.ai.setCurrentQuestion({ stepId, question });
         this.bus.emit({ type: 'question_ready', stepId, question });
       },
@@ -215,7 +219,62 @@ export class Conductor {
       this.tickTimer = null;
     }
     this.beatPlayer.stop();
+    this.pendingQuestion = null;
+    this.ai.setCurrentQuestion(null);
+    this.ai.setPendingContinue(null);
     this.ai.setScenarioRunning(false);
+  }
+
+  /**
+   * Submit an answer for the currently pending question.
+   * Evaluates correctness, shows feedback as a Millie message, and gates
+   * advancement behind the Continue / Next Step button.
+   */
+  answerQuestion(answer: string | number): void {
+    const pending = this.pendingQuestion;
+    if (!pending) return;
+    const { stepId, question } = pending;
+
+    let feedback: string;
+    if (question.type === 'numeric_range' && question.idealRange) {
+      const num = Number(answer);
+      if (num < question.idealRange[0]) {
+        feedback = question.feedback['low'] ?? 'That value is below the recommended range.';
+      } else if (num > question.idealRange[1]) {
+        feedback = question.feedback['high'] ?? 'That value is above the recommended range.';
+      } else {
+        feedback = question.feedback['ideal'] ?? 'Good choice — within the ideal range!';
+      }
+      // Administer the user-specified dose for dosing questions
+      const step = this.findStep(stepId);
+      if (step) {
+        const simActionBeat = step.beats.find(
+          b => b.type === 'simAction' && b.simAction?.type === 'administer_drug'
+        );
+        const sa = simActionBeat?.simAction;
+        if (sa?.type === 'administer_drug' && 'drug' in sa && Number(answer) > 0) {
+          this.sim.administerBolus(sa.drug, Number(answer));
+        }
+      }
+    } else {
+      const key = String(answer);
+      feedback = question.feedback[key] ?? (answer === question.correctAnswer ? 'Correct!' : 'Not quite. Review the teaching points.');
+    }
+
+    this.ai.addMentorMessage('mentor', feedback);
+    this.pendingQuestion = null;
+    this.ai.setCurrentQuestion(null);
+    this.ai.setActiveHighlights(null);
+    this.ai.setPendingContinue({ stepId, stepLabel: stepId });
+  }
+
+  /**
+   * Acknowledge the current step and allow the Conductor to advance.
+   * Called when the learner clicks "Next Step".
+   */
+  continuePendingStep(): void {
+    this.ai.setPendingContinue(null);
+    this.completeCurrentStep();
   }
 
   /** Mark the current step as complete and allow the next to trigger. */

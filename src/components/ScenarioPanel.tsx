@@ -1,13 +1,8 @@
 import React, { useState } from 'react';
 import { INTERACTIVE_SCENARIOS } from '../engine/interactiveScenarios';
 import { InteractiveScenario } from '../engine/ScenarioEngine';
-import { scenarioEngine } from '../engine/ScenarioEngine';
 import useAIStore from '../store/useAIStore';
 import { useConductor } from '../hooks/useConductor';
-import { EASY_COLONOSCOPY_BEATS } from '../engine/scenarios/easyColonoscopyBeats';
-
-/** Feature flag — set to false to fall back to the legacy ScenarioEngine. */
-const USE_CONDUCTOR = false;
 
 const DIFFICULTY_COLORS: Record<InteractiveScenario['difficulty'], string> = {
   easy: 'bg-green-900 text-green-300',
@@ -46,27 +41,13 @@ export const ScenarioPanel: React.FC = () => {
 
 
     const handlePlayScenario = (scenario: InteractiveScenario) => {
-        if (USE_CONDUCTOR) {
-      if (scenario.id === 'easy_colonoscopy') {
-        conductor.loadScenario(EASY_COLONOSCOPY_BEATS);
-      } else {
-        conductor.loadLegacyScenario(scenario);
-      }
+      conductor.loadLegacyScenario(scenario);
       useAIStore.getState().setActiveAITab('mentor');
       conductor.start();
-    } else {
-      scenarioEngine.loadScenario(scenario);
-      useAIStore.getState().setActiveAITab('mentor');
-      scenarioEngine.start();
-    }
   };
   
   const handleStopScenario = () => {
-    if (USE_CONDUCTOR) {
-      conductor.stop();
-    } else {
-      scenarioEngine.stop();
-    }
+    conductor.stop();
     if (currentScenario) markComplete(currentScenario.id);
   };
 

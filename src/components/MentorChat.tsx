@@ -8,7 +8,7 @@ import { EEGState } from '../engine/eegModel';
 import { DigitalTwin } from '../engine/digitalTwin';
 import useSimStore from '../store/useSimStore';
 import useAIStore from '../store/useAIStore';
-import { scenarioEngine } from '../engine/ScenarioEngine';
+import { conductorInstance } from '../engine/conductor/conductorInstance';
 import GhostDosePreview from './GhostDosePreview';
 import { ScenarioPanel } from './ScenarioPanel';
 import ScenarioStepper from './ScenarioStepper';
@@ -239,7 +239,7 @@ const MentorChat: React.FC<MentorChatProps> = ({
       answer = selectedChoice;
       if (!answer) return;
     }
-    scenarioEngine.answerQuestion(answer);
+    conductorInstance.answerQuestion(answer);
     setSelectedChoice('');
     setNumericAnswer('');
   }, [currentQuestion, selectedChoice, numericAnswer]);
@@ -375,7 +375,7 @@ const MentorChat: React.FC<MentorChatProps> = ({
       {pendingContinue && !currentQuestion && (
         <div className="mx-3 mb-2">
           <button
-            onClick={() => { scenarioEngine.continuePendingStep(); setAutoAdvanceCountdown(null); }}
+            onClick={() => { conductorInstance.continuePendingStep(); setAutoAdvanceCountdown(null); }}
             className="w-full text-sm py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg font-bold flex items-center justify-center gap-2 transition-colors"
             style={{ animation: 'continue-pulse 1.5s ease-in-out infinite' }}
           >
