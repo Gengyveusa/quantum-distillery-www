@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import useSimStore from '../store/useSimStore';
-import { scenarioEngine } from '../engine/ScenarioEngine';
+import { conductorInstance } from '../engine/conductor/conductorInstance';
 import { audioManager } from '../utils/audio';
 const SPEED_OPTIONS = [0.5, 1, 2, 5, 10];
 
@@ -8,6 +8,8 @@ export default  function ControlBar() {
   const { isRunning, speedMultiplier, elapsedSeconds, toggleRunning, reset, setSpeed, isScenarioActive } = useSimStore();
   const [isMuted, setIsMuted] = useState(false);
   const [silenceRemaining, setSilenceRemaining] = useState(0);
+  const [breathEnabled, setBreathEnabled] = useState(false);
+  const [heartEnabled, setHeartEnabled] = useState(false);
 
   // Tick down the silence countdown display every second
   useEffect(() => {
@@ -40,7 +42,7 @@ export default  function ControlBar() {
   const handleReset = () => {
     audioManager.stopAll();
     if (isScenarioActive) {
-      scenarioEngine.stop();
+      conductorInstance.stop();
     }
     reset();
   };
@@ -54,6 +56,18 @@ export default  function ControlBar() {
   const handleSilenceAlarms = () => {
     audioManager.silenceAlarms(60000);
     setSilenceRemaining(60);
+  };
+
+  const handleBreathToggle = () => {
+    const next = !breathEnabled;
+    setBreathEnabled(next);
+    audioManager.setBreathSoundsEnabled(next);
+  };
+
+  const handleHeartToggle = () => {
+    const next = !heartEnabled;
+    setHeartEnabled(next);
+    audioManager.setHeartSoundsEnabled(next);
   };
 
   return (
@@ -123,6 +137,30 @@ export default  function ControlBar() {
         >
           {silenceRemaining > 0 ? `🔕 ${silenceRemaining}s` : '🔕'}
         </button>
+        <button
+          data-sim-id="breath-sounds-button"
+          onClick={handleBreathToggle}
+          title={breathEnabled ? 'Disable breath sounds' : 'Enable breath sounds (off by default)'}
+          className={`px-2 py-1.5 rounded text-xs font-medium transition-colors ${
+            breathEnabled
+              ? 'bg-teal-700 text-teal-200 hover:bg-teal-600'
+              : 'bg-gray-700 text-gray-400 hover:bg-gray-600'
+          }`}
+        >
+          🫁
+        </button>
+        <button
+          data-sim-id="heart-sounds-button"
+          onClick={handleHeartToggle}
+          title={heartEnabled ? 'Disable heart sounds' : 'Enable heart sounds (off by default)'}
+          className={`px-2 py-1.5 rounded text-xs font-medium transition-colors ${
+            heartEnabled
+              ? 'bg-rose-700 text-rose-200 hover:bg-rose-600'
+              : 'bg-gray-700 text-gray-400 hover:bg-gray-600'
+          }`}
+        >
+          ❤️
+        </button>
       </div>
 
       <div className="ml-auto flex items-center gap-4 text-sm">
@@ -135,3 +173,4 @@ export default  function ControlBar() {
     </div>
   );
 }
+

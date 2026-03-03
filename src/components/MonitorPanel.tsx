@@ -349,6 +349,7 @@ interface ScaleToast {
 export default function MonitorPanel({ vitals, history: _history }: MonitorPanelProps) {
   const isRunning = useSimStore((s: { isRunning: boolean }) => s.isRunning);
   const emergencyState = useSimStore((s: { emergencyState: EmergencyState }) => s.emergencyState);
+  const moass = useSimStore((s: { moass: number }) => s.moass);
   const ecgCanvasRef = useRef<HTMLCanvasElement>(null);
   const plethCanvasRef = useRef<HTMLCanvasElement>(null);
   const capnoCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -455,8 +456,14 @@ vfibOffsetRef.current += 0.012    }
   useEffect(() => {
     if (isRunning) {
       audioManager.updateSpO2Tone(vitals.spo2, vitals.hr);
+      // Airway patency: MOASS 0-1 = severely compromised (0.0-0.3),
+      //                 MOASS 2   = moderate obstruction (0.5),
+      //                 MOASS 3+  = patent (1.0)
+      const airwayPatency = moass <= 1 ? moass * 0.15 : moass <= 2 ? 0.5 : 1.0;
+      audioManager.updateBreathSounds(vitals.rr, moass, airwayPatency);
+      audioManager.updateHeartSounds(vitals.hr, vitals.sbp);
     }
-  }, [vitals.spo2, vitals.hr, isRunning]);
+  }, [vitals.spo2, vitals.hr, vitals.rr, vitals.sbp, moass, isRunning]);
 
   // Audio: alarm tones — driven by canonical emergencyState from store (single source of truth)
   useEffect(() => {
