@@ -13,6 +13,7 @@ import TrendGraph from './components/TrendGraph';
 import ControlBar from './components/ControlBar';
 import EventLog from './components/EventLog';
 import SedationGauge from './components/SedationGauge';
+import AEDPanel from './components/AEDPanel';
 import SimMasterOverlay from './components/SimMasterOverlay';
 import { Dashboard } from './components/Dashboard';
 
@@ -86,6 +87,10 @@ export default function App() {
             {/* HERO: Giant Sedation Gauge - takes up most of center */}
             <div className="flex-1 overflow-y-auto">
               <SedationGauge />
+              {/* AED Panel — bottom of center column */}
+              <div className="px-2 pb-2">
+                <AEDPanel />
+              </div>
             </div>
           </div>
 
