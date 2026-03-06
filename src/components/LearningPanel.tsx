@@ -62,7 +62,7 @@ interface QuizState {
 
 export function LearningPanelContent() {
   const [activeTab, setActiveTab] = useState<'learn' | 'quiz' | 'scenarios'>('learn');
-  const [selectedModuleId, setSelectedModuleId] = useState<string>('resp_anatomy_physiology');
+  const [selectedModuleId, setSelectedModuleId] = useState<string>('bls_heartcode');
   const [quizStates, setQuizStates] = useState<Record<number, QuizState>>({});
 
   const module: LearningModule | undefined = EDUCATION_MODULES[selectedModuleId];

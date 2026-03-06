@@ -1,5 +1,7 @@
 // Education Module Infrastructure for SedSim
 
+import { BLS_HEARTCODE_MODULE } from './blsModule';
+
 export type EducationCategory =
   | 'anatomy_physiology'
   | 'pharmacology'
@@ -35,6 +37,7 @@ export interface LearningModule {
 }
 
 export const EDUCATION_MODULES: Record<string, LearningModule> = {
+  bls_heartcode: BLS_HEARTCODE_MODULE,
   resp_anatomy_physiology: {
     id: 'resp_anatomy_physiology',
     title: 'Foundations - Respiratory Anatomy & Physiology for Procedural Sedation',
