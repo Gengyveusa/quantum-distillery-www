@@ -90,7 +90,7 @@ function CompactDrugCard({ drug, scenarioLocked, isUnlocked, scenarioHintRange }
             onClick={() => administerBolus(drugKey, dose)}
             disabled={buttonsDisabled}
             aria-label={`Administer ${dose} ${drug.unit} bolus of ${drug.name}`}
-            className="flex-1 py-0.5 rounded text-xs font-mono hover:brightness-125 transition-all disabled:cursor-not-allowed disabled:hover:brightness-100"
+            className="flex-1 min-h-[44px] rounded text-xs font-mono hover:brightness-125 transition-all disabled:cursor-not-allowed disabled:hover:brightness-100"
             style={{ background: `${color}22`, color, border: `1px solid ${color}44`, fontSize: 11 }}
           >
             {dose}
@@ -111,13 +111,13 @@ function CompactDrugCard({ drug, scenarioLocked, isUnlocked, scenarioHintRange }
               onChange={(e) => setCustomDose(e.target.value)}
               placeholder={drug.unit}
               aria-label={`Custom bolus dose for ${drug.name} in ${drug.unit}`}
-              className="flex-1 px-1.5 py-0.5 bg-gray-800 rounded text-xs border border-gray-700 font-mono"
+              className="flex-1 px-1.5 py-1 bg-gray-800 rounded text-xs border border-gray-700 font-mono min-h-[44px]"
               style={{ maxWidth: 70 }}
             />
             <button
               onClick={() => { if (customDose) { administerBolus(drugKey, Number(customDose)); setCustomDose(''); } }}
               aria-label={`Push ${customDose || '0'} ${drug.unit} bolus of ${drug.name}`}
-              className="px-2 py-0.5 rounded text-xs font-bold"
+              className="px-2 py-1 rounded text-xs font-bold min-h-[44px]"
               style={{ background: `${color}33`, color, border: `1px solid ${color}` }}
             >{t('common.push')}</button>
           </div>
@@ -131,20 +131,20 @@ function CompactDrugCard({ drug, scenarioLocked, isUnlocked, scenarioHintRange }
               onChange={(e) => setInfRate(e.target.value)}
               placeholder={`${drug.unit}/min`}
               aria-label={`Infusion rate for ${drug.name} in ${drug.unit} per minute`}
-              className="flex-1 px-1.5 py-0.5 bg-gray-800 rounded text-xs border border-gray-700 font-mono"
+              className="flex-1 px-1.5 py-1 bg-gray-800 rounded text-xs border border-gray-700 font-mono min-h-[44px]"
               style={{ maxWidth: 70 }}
             />
             {!infusion?.isRunning ? (
               <button
                 onClick={() => { if (infRate) startInfusion(drugKey, Number(infRate)); }}
                 aria-label={`Start ${drug.name} infusion at ${infRate || 0} ${drug.unit} per minute`}
-                className="px-2 py-0.5 bg-green-800 hover:bg-green-700 rounded text-xs"
+                className="px-2 py-1 bg-green-800 hover:bg-green-700 rounded text-xs min-h-[44px]"
               >{t('common.start')}</button>
             ) : (
               <button
                 onClick={() => stopInfusion(drugKey)}
                 aria-label={`Stop ${drug.name} infusion`}
-                className="px-2 py-0.5 bg-red-800 hover:bg-red-700 rounded text-xs"
+                className="px-2 py-1 bg-red-800 hover:bg-red-700 rounded text-xs min-h-[44px]"
               >{t('common.stop')}</button>
             )}
           </div>

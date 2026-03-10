@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useShallow } from 'zustand/react/shallow';
 import useSimStore from './store/useSimStore';
@@ -38,8 +38,14 @@ export default function App() {
   const vitals = useSimStore(s => s.vitals);
   const [trendsExpanded, setTrendsExpanded] = useState(false);
   const [airwayExpanded, setAirwayExpanded] = useState(false);
+  // Mobile/tablet: left panel slide-over drawer
+  const [leftPanelOpen, setLeftPanelOpen] = useState(false);
   const simMasterEnabled = useAIStore(s => s.simMasterEnabled);
   const { initScorm, terminateScorm } = useLMSStore();
+
+  // Swipe gesture state
+  const touchStartX = useRef<number | null>(null);
+  const touchStartY = useRef<number | null>(null);
 
   // Initialise SCORM session on mount; terminate on unmount
   useEffect(() => {
@@ -62,21 +68,108 @@ export default function App() {
     return () => clearInterval(interval);
   }, [isRunning, speedMultiplier, tick]);
 
+  // Close mobile left panel when screen gets large enough
+  useEffect(() => {
+    const mql = window.matchMedia('(min-width: 1024px)');
+    const handler = (e: MediaQueryListEvent) => {
+      if (e.matches) setLeftPanelOpen(false);
+    };
+    mql.addEventListener('change', handler);
+    return () => mql.removeEventListener('change', handler);
+  }, []);
+
+  // Swipe handlers: swipe right from left edge opens drawer, swipe left closes it
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+  }, []);
+
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    if (touchStartX.current === null || touchStartY.current === null) return;
+    const dx = e.changedTouches[0].clientX - touchStartX.current;
+    const dy = e.changedTouches[0].clientY - touchStartY.current;
+    // Only handle horizontal swipes (dx dominant over dy)
+    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 40) {
+      if (dx > 0 && touchStartX.current < 48) {
+        // Swipe right from left edge → open drawer
+        setLeftPanelOpen(true);
+      } else if (dx < 0 && leftPanelOpen) {
+        // Swipe left anywhere → close drawer
+        setLeftPanelOpen(false);
+      }
+    }
+    touchStartX.current = null;
+    touchStartY.current = null;
+  }, [leftPanelOpen]);
+
   return (
     <>
       {/* Skip navigation for keyboard users */}
       <a href="#sim-main" className="skip-link">Skip to main content</a>
 
-      <div className="h-screen flex flex-col bg-sim-bg text-white">
+      <div
+        className="h-screen flex flex-col bg-sim-bg text-white overflow-hidden"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
         {/* Offline Banner */}
         <OfflineBanner />
-        {/* Top Banner */}
-        <PatientBanner />
+        {/* Top Banner — includes hamburger on mobile/tablet */}
+        <div className="flex items-stretch border-b border-gray-700 bg-sim-panel shrink-0">
+          {/* Hamburger button: visible only below lg breakpoint */}
+          <button
+            className="lg:hidden flex items-center justify-center w-11 h-full px-2 text-gray-400 hover:text-white hover:bg-gray-700/60 transition-colors touch-target shrink-0"
+            onClick={() => setLeftPanelOpen(v => !v)}
+            aria-label="Toggle drug controls"
+            title="Drug Controls"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+          <div className="flex-1 min-w-0">
+            <PatientBanner />
+          </div>
+        </div>
 
         {/* Main Content */}
-        <div id="sim-main" className="flex-1 flex overflow-hidden" role="main" aria-label="Sedation simulator workspace">
-          {/* Left Panel - Drug Controls */}
-          <div className="w-80 border-r border-gray-700 overflow-y-auto p-2 space-y-2" role="complementary" aria-label="Drug and intervention controls">
+        <div id="sim-main" className="flex-1 flex overflow-hidden relative" role="main" aria-label="Sedation simulator workspace">
+
+          {/* ── Mobile/Tablet overlay backdrop ── */}
+          {leftPanelOpen && (
+            <div
+              className="lg:hidden fixed inset-0 z-30 bg-black/50"
+              onClick={() => setLeftPanelOpen(false)}
+              aria-hidden="true"
+            />
+          )}
+
+          {/* Left Panel - Drug Controls
+              Desktop (lg+): always visible, static column (w-72)
+              Tablet/Mobile (<lg): absolute slide-over drawer, toggled by hamburger/swipe */}
+          <div className={`
+            lg:static lg:translate-x-0 lg:w-72 lg:flex lg:flex-col lg:shrink-0
+            border-r border-gray-700 bg-sim-bg overflow-y-auto p-2 space-y-2
+            fixed inset-y-0 left-0 z-40 w-72
+            transition-transform duration-300 ease-in-out
+            ${leftPanelOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+          `}
+            role="complementary" aria-label="Drug and intervention controls"
+          >
+            {/* Close button inside the drawer (mobile/tablet only) */}
+            <div className="lg:hidden flex items-center justify-between py-2 px-1 border-b border-gray-700 mb-1">
+              <span className="text-sm font-bold text-gray-300 uppercase tracking-wider">Drug Controls</span>
+              <button
+                className="touch-target text-gray-400 hover:text-white p-1"
+                onClick={() => setLeftPanelOpen(false)}
+                aria-label="Close drug controls"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
             <PatientSelector />
             <DrugPanel />
             <LocalAnesthPanel />
@@ -99,7 +192,7 @@ export default function App() {
                 }}
                 aria-label={simMasterEnabled ? 'Disable SimMaster AI observer' : 'Enable SimMaster AI observer'}
                 aria-pressed={simMasterEnabled}
-                className={`px-4 py-2 rounded text-white text-sm font-bold transition-colors w-full ${
+                className={`px-4 py-2 rounded text-white text-sm font-bold transition-colors w-full min-h-[44px] ${
                   simMasterEnabled
                     ? 'bg-red-600 hover:bg-red-500'
                     : 'bg-purple-600 hover:bg-purple-500'
@@ -115,11 +208,11 @@ export default function App() {
             </div>
           </div>
 
-          {/* Center - Hero Gauge + Monitor */}
-          <div className="flex-1 flex flex-col overflow-hidden relative" role="region" aria-label="Patient monitor and sedation gauge">
+          {/* Center - Hero Gauge + Monitor (always takes remaining space) */}
+          <div className="flex-1 flex flex-col overflow-hidden relative min-w-0" role="region" aria-label="Patient monitor and sedation gauge">
             {/* Compact vitals monitor strip at top */}
             <MonitorPanel vitals={vitals} history={vitalsHistory} />
-            {/* HERO: Giant Sedation Gauge - takes up most of center */}
+            {/* HERO: Giant Sedation Gauge */}
             <div className="flex-1 overflow-y-auto">
               <SedationGauge />
               {/* AED Panel — bottom of center column */}
@@ -129,12 +222,13 @@ export default function App() {
             </div>
           </div>
 
-          {/* Right Sidebar - Collapsible Intervention Panel */}
-          <div className="flex flex-row">
+          {/* Right Sidebar - Collapsible Intervention Panel
+              Hidden on mobile (<md), collapsible tab on md+, expanded on lg+ if opened */}
+          <div className="hidden md:flex flex-row">
             {!airwayExpanded && (
               <button
                 onClick={() => setAirwayExpanded(true)}
-                className="h-full w-10 flex items-center justify-center bg-gray-800/60 hover:bg-gray-700/80 transition-colors group"
+                className="h-full w-10 flex items-center justify-center bg-gray-800/60 hover:bg-gray-700/80 transition-colors group touch-target"
                 title={t('app.simmaster.expandAirway')}
                 aria-label="Show Airway and O₂ controls"
                 aria-expanded={false}
@@ -149,7 +243,7 @@ export default function App() {
                   <span className="text-xs text-gray-400 uppercase tracking-wider font-semibold">{t('app.simmaster.airwayTitle')}</span>
                   <button
                     onClick={() => setAirwayExpanded(false)}
-                    className="text-gray-400 hover:text-white text-sm px-1"
+                    className="text-gray-400 hover:text-white text-sm px-2 py-1 touch-target"
                     title={t('app.simmaster.collapseAirway')}
                     aria-label="Collapse Airway and O₂ panel"
                     aria-expanded={true}
@@ -165,8 +259,9 @@ export default function App() {
             )}
           </div>
 
-          {/* Right side: LMS Panel + Event Log + Collapsible Trends */}
-          <div className="flex flex-row" role="complementary" aria-label="Trends and event log">
+          {/* Right side: LMS Panel + Event Log + Collapsible Trends
+              Trends collapsed by default on tablet, event log hidden on mobile */}
+          <div className="hidden md:flex flex-row" role="complementary" aria-label="Trends and event log">
             {/* LMS / xAPI / SCORM Panel */}
             <LMSPanel />
             {/* Trends Panel - collapsible side drawer */}
@@ -179,7 +274,7 @@ export default function App() {
               {!trendsExpanded && (
                 <button
                   onClick={() => setTrendsExpanded(true)}
-                  className="h-full w-10 flex items-center justify-center bg-gray-800/60 hover:bg-gray-700/80 transition-colors group"
+                  className="h-full w-10 flex items-center justify-center bg-gray-800/60 hover:bg-gray-700/80 transition-colors group touch-target"
                   title={t('app.simmaster.expandTrends')}
                   aria-label="Show Trend Graphs panel"
                   aria-expanded={false}
@@ -195,7 +290,7 @@ export default function App() {
                     <span className="text-xs text-gray-400 uppercase tracking-wider font-semibold">{t('app.simmaster.trendsTitle')}</span>
                     <button
                       onClick={() => setTrendsExpanded(false)}
-                      className="text-gray-400 hover:text-white text-sm px-1"
+                      className="text-gray-400 hover:text-white text-sm px-2 py-1 touch-target"
                       title={t('app.simmaster.collapseTrends')}
                       aria-label="Collapse Trend Graphs panel"
                       aria-expanded={true}
