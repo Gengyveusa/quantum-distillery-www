@@ -53,7 +53,7 @@ export const ScenarioOptionSchema = z.object({
 export const SimActionSchema = z.object({
   type: SimActionTypeSchema,
   atOffsetSec: z.number().optional(),
-  payload: z.record(z.unknown()),
+  payload: z.record(z.string(), z.unknown()),
 });
 
 export const PhysiologyPredicateSchema = z.object({
