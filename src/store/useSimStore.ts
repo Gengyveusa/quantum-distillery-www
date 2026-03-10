@@ -6,6 +6,7 @@ import { combinedEffect, effectToMOASS } from '../engine/pdModel';
 import { calculateVitals, checkAlarms, BASELINE_VITALS, PATIENT_ARCHETYPES, IVFluidContext } from '../engine/physiology';
 import { generateEEG, EEGState } from '../engine/eegModel';
 import { DigitalTwin, createDigitalTwin, updateTwin } from '../engine/digitalTwin';
+import { sessionRecorderInstance } from '../engine/sessionRecorderInstance';
 
 export interface DrugProtocol {
   name: string;
@@ -470,6 +471,20 @@ const useSimStore = create<SimState>((set, get) => ({
     // Update userIdleSeconds
     const newUserIdleSeconds = state.userIdleSeconds + dt;
 
+    // Record snapshot for session playback (fire-and-forget; recorder is cheap)
+    sessionRecorderInstance.record({
+      t: newTime,
+      vitals: newVitals,
+      pkStates: newPkStates,
+      moass,
+      combinedEff,
+      interventions: [...state.interventions] as InterventionType[],
+      airwayDevice: state.airwayDevice,
+      fio2,
+      newEvents: newLogs,
+      millieMessages: [],
+    });
+
     set({
       elapsedSeconds: newTime,
       pkStates: newPkStates,
@@ -788,6 +803,8 @@ const useSimStore = create<SimState>((set, get) => ({
   reset: () => {
     const state = get();
     const patient = state.patient;
+    // Clear the session recorder so a new recording starts fresh
+    sessionRecorderInstance.clear();
     set({
       elapsedSeconds: 0,
       isRunning: false,
