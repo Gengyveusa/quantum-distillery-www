@@ -376,6 +376,20 @@ const useSimStore = create<SimState>((set, get) => ({
     // Check for alarms
     const activeAlarms = checkAlarms(newVitals);
 
+    // Derive rhythm from vitals (needed by both updateTwin and log processing)
+    const newRhythm = newVitals.rhythm ?? 'normal_sinus';
+
+    // Update digital twin with current PK states (before trendPoint so riskScore is available)
+    const newDigitalTwin = updateTwin(
+      state.digitalTwin || createDigitalTwin(patient),
+      newPkStates,
+      newVitals.hr,
+      newVitals.spo2,
+      dt,
+      newRhythm,
+      newVitals.sbp
+    );
+
     // Update trend data
     const newTime = state.elapsedSeconds + dt;
     const newTrendPoint: TrendPoint = {
@@ -386,6 +400,7 @@ const useSimStore = create<SimState>((set, get) => ({
         Object.entries(newPkStates).map(([name, state]) => [name, state.ce])
       ),
       moass,
+      riskScore: newDigitalTwin.predictedOutcome.compositeRisk,
     };
 
     const trendData = [...state.trendData, newTrendPoint];
@@ -412,7 +427,6 @@ const useSimStore = create<SimState>((set, get) => ({
     });
 
     // Log rhythm changes
-    const newRhythm = newVitals.rhythm ?? 'normal_sinus';
     if (newRhythm !== prevRhythm) {
       const isLethal = [
         'ventricular_fibrillation', 'ventricular_tachycardia', 'polymorphic_vt',
@@ -434,17 +448,6 @@ const useSimStore = create<SimState>((set, get) => ({
     const midazCe = newPkStates['midazolam']?.ce || 0;
     const fentCe = newPkStates['fentanyl']?.ce || 0;
     const newEegState = generateEEG(propCe, dexCe, ketCe, midazCe, fentCe, patient.age, newTime, combinedEff, state.eegState ?? undefined);
-
-    // Update digital twin with current PK states
-    const newDigitalTwin = updateTwin(
-      state.digitalTwin || createDigitalTwin(patient),
-      newPkStates,
-      newVitals.hr,
-      newVitals.spo2,
-      dt,
-      newRhythm,
-      newVitals.sbp
-    );
 
     // Accumulate IV fluid infused (rate is mL/hr, dt is 1 second -> mL/3600)
     const newIvFluids = { ...state.ivFluids };
