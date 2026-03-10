@@ -10,6 +10,7 @@ import { createUiSlice } from './slices/uiSlice';
 export type { DrugProtocol, TrueNorth } from './slices/patientSlice';
 export type { IVFluidState } from './slices/drugSlice';
 export { formatTime } from './slices/uiSlice';
+export { computeVisualizationState } from './slices/vitalsSlice';
 
 /**
  * Root simulation store composed from typed slices.

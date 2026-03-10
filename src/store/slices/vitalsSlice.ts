@@ -52,13 +52,38 @@ export function computeVisualizationState(
   moass: MOASSLevel,
   combinedEff: number,
   fio2: number,
+  fluidBolusMl = 0,
 ): { echoParams: EchoParams; frankStarlingPoint: FrankStarlingPoint; oxyHbPoint: OxyHbPoint; avatarState: AvatarState; waveformParams: WaveformParams } {
+  // ── Cardiac arrest short-circuit ──
+  const rhythm = vitals.rhythm ?? 'normal_sinus';
+  const isArrest = rhythm === 'ventricular_fibrillation' || rhythm === 'asystole' || rhythm === 'pea';
+
+  if (isArrest) {
+    const arrestSv = rhythm === 'pea' ? 5 : 0;
+    const arrestVedv = 130;
+    const arrestVesv = arrestVedv - arrestSv;
+    const arrestEf = arrestVedv > 0 ? (arrestSv / arrestVedv) * 100 : 0;
+    const arrestHr = vitals.hr || 0;
+    return {
+      echoParams: { preload: 50, afterload: 20, contractility: 0.1, heartRate: arrestHr },
+      frankStarlingPoint: { vedv: arrestVedv, vesv: arrestVesv, sv: arrestSv, ef: arrestEf, pEdp: 0, peakSys: vitals.sbp || 0, ees: 0.1, hr: arrestHr },
+      oxyHbPoint: { pao2: 0, spo2: vitals.spo2, p50: 26.6, paco2: 45, pH: 7.35 },
+      avatarState: { skinTone: 'cyanotic', diaphoresis: true, pupilDilated: true, chestRiseRate: 0 },
+      waveformParams: { plethAmplitude: 0, capnoFlat: true, rhythm },
+    };
+  }
+
   // ── Shared cardiac modifier computation (same as EchoSim & FrankStarlingCurve) ──
   let ees = 2.5;
   let edpScale = 1.0;
   let vedv = 130;
   let peakSys = vitals.sbp || 120;
   const hr = vitals.hr || 75;
+
+  // Fluid bolus increases preload (EDV)
+  if (fluidBolusMl > 0) {
+    vedv += Math.min(30, fluidBolusMl * 0.04);
+  }
 
   if (patient.age > 65) { ees -= 0.4; edpScale += 0.3; }
   else if (patient.age > 50) { ees -= 0.2; edpScale += 0.15; }
@@ -73,13 +98,13 @@ export function computeVisualizationState(
   const fentCe = pkStates['fentanyl']?.ce || 0;
   const ketCe = pkStates['ketamine']?.ce || 0;
 
-  if (propCe > 0) { ees -= propCe * 0.15; peakSys -= propCe * 5; }
+  if (propCe > 0) { ees -= propCe * 0.08; peakSys -= propCe * 5; vedv -= propCe * 3; }
   if (midazCe > 0) { ees -= midazCe * 0.05; }
   if (fentCe > 0) { ees -= fentCe * 0.2; peakSys -= fentCe * 3; }
   if (ketCe > 0) { ees += ketCe * 0.1; peakSys += ketCe * 4; }
 
-  if (moass >= 4) { ees -= 0.3; peakSys -= 15; }
-  else if (moass >= 2) { ees -= 0.15; peakSys -= 8; }
+  if (moass <= 1) { ees -= 0.3; peakSys -= 15; }
+  else if (moass <= 3) { ees -= 0.15; peakSys -= 8; }
   ees -= combinedEff * 0.08;
 
   ees = Math.max(0.8, Math.min(4.0, ees));
