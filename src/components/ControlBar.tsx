@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import useSimStore from '../store/useSimStore';
 import { conductorInstance } from '../engine/conductor/conductorInstance';
 import { audioManager } from '../utils/audio';
@@ -6,7 +7,17 @@ import SessionPlaybackPanel from './SessionPlaybackPanel';
 const SPEED_OPTIONS = [0.5, 1, 2, 5, 10];
 
 export default  function ControlBar() {
-  const { isRunning, speedMultiplier, elapsedSeconds, toggleRunning, reset, setSpeed, isScenarioActive } = useSimStore();
+  const { isRunning, speedMultiplier, elapsedSeconds, toggleRunning, reset, setSpeed, isScenarioActive } = useSimStore(
+    useShallow(s => ({
+      isRunning: s.isRunning,
+      speedMultiplier: s.speedMultiplier,
+      elapsedSeconds: s.elapsedSeconds,
+      toggleRunning: s.toggleRunning,
+      reset: s.reset,
+      setSpeed: s.setSpeed,
+      isScenarioActive: s.isScenarioActive,
+    }))
+  );
   const [isMuted, setIsMuted] = useState(false);
   const [silenceRemaining, setSilenceRemaining] = useState(0);
   const [breathEnabled, setBreathEnabled] = useState(false);

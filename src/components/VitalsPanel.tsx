@@ -1,3 +1,4 @@
+import { useShallow } from 'zustand/react/shallow';
 import useSimStore from '../store/useSimStore';
 import { DRUG_DATABASE } from '../engine/drugs';
 
@@ -24,7 +25,9 @@ function VitalBox({ label, value, unit, color = 'text-green-400', alarm = false,
 }
 
 export default function VitalsPanel() {
-  const { vitals, pkStates } = useSimStore();
+  const { vitals, pkStates } = useSimStore(
+    useShallow(s => ({ vitals: s.vitals, pkStates: s.pkStates }))
+  );
 
   return (
     <div className="bg-sim-panel p-4 border-b border-gray-700" role="region" aria-label="Vital signs monitor">
