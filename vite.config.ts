@@ -10,4 +10,8 @@ export default defineConfig({
     allowedHosts: true,
     host: true,
   },
+  test: {
+    environment: 'node',
+    include: ['src/tests/**/*.test.ts'],
+  },
 });
