@@ -7,6 +7,11 @@ import { calculateVitals, checkAlarms, BASELINE_VITALS, PATIENT_ARCHETYPES, IVFl
 import { generateEEG, EEGState } from '../engine/eegModel';
 import { DigitalTwin, createDigitalTwin, updateTwin } from '../engine/digitalTwin';
 
+// Lazy import to avoid circular dependency – resolved at call-time.
+function getLMSStore() {
+  return import('./useLMSStore').then(m => m.default.getState());
+}
+
 export interface DrugProtocol {
   name: string;
   route: string;
@@ -516,6 +521,10 @@ const useSimStore = create<SimState>((set, get) => ({
       lastUserInteraction: Date.now(),
       userIdleSeconds: 0,
     });
+    // Emit xAPI statement (fire-and-forget)
+    void getLMSStore().then(lms => {
+      lms.emitDrugAdministered(drug.name, dose, drug.unit, state.elapsedSeconds);
+    });
   },
 
   startInfusion: (drugName, rate) => {
@@ -619,6 +628,10 @@ const useSimStore = create<SimState>((set, get) => ({
 
   setScenarioActive: (active) => {
     set({ isScenarioActive: active });
+    // Emit xAPI "attempted" when scenario starts
+    if (active) {
+      void getLMSStore().then(lms => lms.emitAttempted());
+    }
   },
 
   setScenarioDrugProtocols: (protocols) => {
@@ -643,6 +656,10 @@ const useSimStore = create<SimState>((set, get) => ({
       lastInterventionApplied: intervention,
       lastUserInteraction: Date.now(),
       userIdleSeconds: 0,
+    });
+    // Emit xAPI statement (fire-and-forget)
+    void getLMSStore().then(lms => {
+      lms.emitIntervention(intervention, state.elapsedSeconds);
     });
   },
 
