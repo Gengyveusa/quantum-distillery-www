@@ -33,6 +33,9 @@ jobs:
       - name: Run unit tests
         run: npm test
 
+      - name: Run PK/PD validation tests
+        run: npm run test:vitest
+
   build:
     runs-on: ubuntu-latest
     needs: test

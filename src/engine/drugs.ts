@@ -1,11 +1,13 @@
 import { DrugParams } from '../types';
 
-// Propofol - Marsh model parameters (70kg adult)
+// Propofol - Marsh 1991 model parameters (70kg adult)
+// Marsh BE et al. Br J Anaesth. 1991;67:41-48.
+// k12 corrected to 0.114 per published Table 1.
 export const propofol: DrugParams = {
   name: 'Propofol',
   color: '#3b82f6',  // blue
   k10: 0.119,
-  k12: 0.112,
+  k12: 0.114,  // Marsh 1991 Table 1: 0.114 min⁻¹ (not 0.112)
   k13: 0.042,
   k21: 0.055,
   k31: 0.0033,
@@ -83,16 +85,20 @@ export const dexmedetomidine: DrugParams = {
 };
 
 // Remifentanil - Minto 1997 model (ultra-short acting opioid)
+// Minto CF et al. Anesthesiology. 1997;86:10-23.
+// Parameters computed for standard patient: 40 yr, 70 kg, 170 cm, male
+// LBM ≈ 55.3 kg (James formula).
+// CL1=2.60, CL2=2.05, CL3=0.076 L/min; V1=5.1 L, V2=9.82 L, V3=5.42 L.
 // Fast ke0: rapid onset and offset. Mistakes self-correct quickly but stacking is lethal
 export const remifentanil: DrugParams = {
   name: 'Remifentanil',
   color: '#fb923c',  // orange
-  k10: 0.23,  // very fast elimination (context-insensitive)
-  k12: 0.64,
-  k13: 0.15,
-  k21: 0.11,
-  k31: 0.017,
-  ke0: 0.595,  // FAST effect-site equilibration (~1 min)
+  k10: 0.510,  // CL1/V1 = 2.60/5.1 (context-insensitive elimination)
+  k12: 0.401,  // CL2/V1 = 2.05/5.1
+  k13: 0.015,  // CL3/V1 = 0.076/5.1
+  k21: 0.209,  // CL2/V2 = 2.05/9.82
+  k31: 0.014,  // CL3/V3 = 0.076/5.42
+  ke0: 0.595,  // FAST effect-site equilibration (~1 min), Minto 1997 Table 2
   V1: 5.1,
     EC50: 0.005,  // mcg/mL (5 ng/mL) - Minto/Eleveld: high opioid sedation EC50
   gamma: 2.0,
