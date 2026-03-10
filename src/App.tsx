@@ -1,6 +1,9 @@
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useMemo, useRef, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useShallow } from 'zustand/react/shallow';
 import useSimStore from './store/useSimStore';
 import useAIStore from './store/useAIStore';
+import useLMSStore from './store/useLMSStore';
 import PatientBanner from './components/PatientBanner';
 import PatientSelector from './components/PatientSelector';
 import DrugPanel from './components/DrugPanel';
@@ -16,18 +19,43 @@ import SedationGauge from './components/SedationGauge';
 import AEDPanel from './components/AEDPanel';
 import SimMasterOverlay from './components/SimMasterOverlay';
 import { Dashboard } from './components/Dashboard';
+import OfflineBanner from './components/OfflineBanner';
+import PWAInstallPrompt from './components/PWAInstallPrompt';
+import LMSPanel from './components/LMSPanel';
+import { usePerformanceObserver } from './hooks/usePerformanceObserver';
 
 export default function App() {
-  const { isRunning, speedMultiplier, tick, trendData } = useSimStore();
+  const { t } = useTranslation();
+
+  // Dev-mode performance monitoring
+  usePerformanceObserver();
+
+  // Narrow subscription: only the fields needed for the tick loop and layout.
+  const { isRunning, speedMultiplier, tick } = useSimStore(
+    useShallow(s => ({ isRunning: s.isRunning, speedMultiplier: s.speedMultiplier, tick: s.tick }))
+  );
+  const trendData = useSimStore(s => s.trendData);
+  const vitals = useSimStore(s => s.vitals);
   const [trendsExpanded, setTrendsExpanded] = useState(false);
   const [airwayExpanded, setAirwayExpanded] = useState(false);
   // Mobile/tablet: left panel slide-over drawer
   const [leftPanelOpen, setLeftPanelOpen] = useState(false);
   const simMasterEnabled = useAIStore(s => s.simMasterEnabled);
+  const { initScorm, terminateScorm } = useLMSStore();
 
   // Swipe gesture state
   const touchStartX = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
+
+  // Initialise SCORM session on mount; terminate on unmount
+  useEffect(() => {
+    initScorm();
+    return () => terminateScorm();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Memoize the vitals history array so MonitorPanel's memo check stays stable.
+  const vitalsHistory = useMemo(() => trendData.map(t => t.vitals), [trendData]);
 
   useEffect(() => {
     if (!isRunning) return;
@@ -76,11 +104,16 @@ export default function App() {
 
   return (
     <>
+      {/* Skip navigation for keyboard users */}
+      <a href="#sim-main" className="skip-link">Skip to main content</a>
+
       <div
         className="h-screen flex flex-col bg-sim-bg text-white overflow-hidden"
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
+        {/* Offline Banner */}
+        <OfflineBanner />
         {/* Top Banner — includes hamburger on mobile/tablet */}
         <div className="flex items-stretch border-b border-gray-700 bg-sim-panel shrink-0">
           {/* Hamburger button: visible only below lg breakpoint */}
@@ -100,7 +133,7 @@ export default function App() {
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 flex overflow-hidden relative">
+        <div id="sim-main" className="flex-1 flex overflow-hidden relative" role="main" aria-label="Sedation simulator workspace">
 
           {/* ── Mobile/Tablet overlay backdrop ── */}
           {leftPanelOpen && (
@@ -121,6 +154,7 @@ export default function App() {
             transition-transform duration-300 ease-in-out
             ${leftPanelOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
           `}
+            role="complementary" aria-label="Drug and intervention controls"
           >
             {/* Close button inside the drawer (mobile/tablet only) */}
             <div className="lg:hidden flex items-center justify-between py-2 px-1 border-b border-gray-700 mb-1">
@@ -146,36 +180,38 @@ export default function App() {
             <div className="border border-gray-700 rounded p-3 bg-gray-800/50">
               <div className="flex items-center gap-2 mb-2">
                 <span className="text-base">{"\ud83c\udfaf"}</span>
-                <span className="text-sm font-bold text-white">SimMaster</span>
+                <span className="text-sm font-bold text-white">{t('app.simmaster.title')}</span>
               </div>
               <p className="text-xs text-gray-400 mb-3">
-                Proactive AI observer that highlights critical events on screen in real-time.
+                {t('app.simmaster.description')}
               </p>
               <button
                 onClick={() => {
                   const store = useAIStore.getState();
                   store.setSimMasterEnabled(!store.simMasterEnabled);
                 }}
+                aria-label={simMasterEnabled ? 'Disable SimMaster AI observer' : 'Enable SimMaster AI observer'}
+                aria-pressed={simMasterEnabled}
                 className={`px-4 py-2 rounded text-white text-sm font-bold transition-colors w-full min-h-[44px] ${
                   simMasterEnabled
                     ? 'bg-red-600 hover:bg-red-500'
                     : 'bg-purple-600 hover:bg-purple-500'
                 }`}
               >
-                {simMasterEnabled ? 'Disable SimMaster' : 'Enable SimMaster'}
+                {simMasterEnabled ? t('app.simmaster.disable') : t('app.simmaster.enable')}
               </button>
               {simMasterEnabled && (
                 <p className="text-[10px] text-green-400 mt-2 animate-pulse">
-                  SimMaster is actively observing the simulation...
+                  {t('app.simmaster.active')}
                 </p>
               )}
             </div>
           </div>
 
           {/* Center - Hero Gauge + Monitor (always takes remaining space) */}
-          <div className="flex-1 flex flex-col overflow-hidden relative min-w-0">
+          <div className="flex-1 flex flex-col overflow-hidden relative min-w-0" role="region" aria-label="Patient monitor and sedation gauge">
             {/* Compact vitals monitor strip at top */}
-            <MonitorPanel vitals={useSimStore.getState().vitals} history={trendData.map(t => t.vitals)} />
+            <MonitorPanel vitals={vitals} history={vitalsHistory} />
             {/* HERO: Giant Sedation Gauge */}
             <div className="flex-1 overflow-y-auto">
               <SedationGauge />
@@ -193,19 +229,25 @@ export default function App() {
               <button
                 onClick={() => setAirwayExpanded(true)}
                 className="h-full w-10 flex items-center justify-center bg-gray-800/60 hover:bg-gray-700/80 transition-colors group touch-target"
-                title="Show Airway & O\u2082"
+                title={t('app.simmaster.expandAirway')}
+                aria-label="Show Airway and O₂ controls"
+                aria-expanded={false}
+                aria-controls="airway-panel"
               >
-                <span className="text-xs text-gray-400 group-hover:text-cyan-400 whitespace-nowrap tracking-wider uppercase" style={{ writingMode: 'vertical-rl' as const, textOrientation: 'mixed' as const }}>Airway</span>
+                <span className="text-xs text-gray-400 group-hover:text-cyan-400 whitespace-nowrap tracking-wider uppercase" style={{ writingMode: 'vertical-rl' as const, textOrientation: 'mixed' as const }}>{t('app.simmaster.airwayLabel')}</span>
               </button>
             )}
             {airwayExpanded && (
-              <div className="flex flex-col h-full bg-sim-panel">
+              <div id="airway-panel" className="flex flex-col h-full bg-sim-panel" role="region" aria-label="Airway and O₂ controls">
                 <div className="flex items-center justify-between px-2 py-1 border-b border-gray-700">
-                  <span className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Airway & O\u2082</span>
+                  <span className="text-xs text-gray-400 uppercase tracking-wider font-semibold">{t('app.simmaster.airwayTitle')}</span>
                   <button
                     onClick={() => setAirwayExpanded(false)}
                     className="text-gray-400 hover:text-white text-sm px-2 py-1 touch-target"
-                    title="Collapse Airway"
+                    title={t('app.simmaster.collapseAirway')}
+                    aria-label="Collapse Airway and O₂ panel"
+                    aria-expanded={true}
+                    aria-controls="airway-panel"
                   >
                     &laquo;
                   </button>
@@ -217,32 +259,42 @@ export default function App() {
             )}
           </div>
 
-          {/* Right side: Event Log + Collapsible Trends
+          {/* Right side: LMS Panel + Event Log + Collapsible Trends
               Trends collapsed by default on tablet, event log hidden on mobile */}
-          <div className="hidden md:flex flex-row">
+          <div className="hidden md:flex flex-row" role="complementary" aria-label="Trends and event log">
+            {/* LMS / xAPI / SCORM Panel */}
+            <LMSPanel />
             {/* Trends Panel - collapsible side drawer */}
             <div
               className={`transition-all duration-300 ease-in-out border-l border-gray-700 overflow-hidden flex flex-col ${
                 trendsExpanded ? 'w-80' : 'w-10'
               }`}
             >
+              {/* Collapsed: vertical tab button */}
               {!trendsExpanded && (
                 <button
                   onClick={() => setTrendsExpanded(true)}
                   className="h-full w-10 flex items-center justify-center bg-gray-800/60 hover:bg-gray-700/80 transition-colors group touch-target"
-                  title="Show Trend Graphs"
+                  title={t('app.simmaster.expandTrends')}
+                  aria-label="Show Trend Graphs panel"
+                  aria-expanded={false}
+                  aria-controls="trends-panel"
                 >
-                  <span className="text-xs text-gray-400 group-hover:text-cyan-400 whitespace-nowrap tracking-wider uppercase" style={{ writingMode: 'vertical-rl' as const, textOrientation: 'mixed' as const }}>Trends</span>
+                  <span className="text-xs text-gray-400 group-hover:text-cyan-400 whitespace-nowrap tracking-wider uppercase" style={{ writingMode: 'vertical-rl' as const, textOrientation: 'mixed' as const }}>{t('app.simmaster.trendsLabel')}</span>
                 </button>
               )}
+              {/* Expanded: full trend panel */}
               {trendsExpanded && (
-                <div className="flex flex-col h-full bg-sim-panel">
+                <div id="trends-panel" className="flex flex-col h-full bg-sim-panel" role="region" aria-label="Trend graphs">
                   <div className="flex items-center justify-between px-2 py-1 border-b border-gray-700">
-                    <span className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Trend Graphs</span>
+                    <span className="text-xs text-gray-400 uppercase tracking-wider font-semibold">{t('app.simmaster.trendsTitle')}</span>
                     <button
                       onClick={() => setTrendsExpanded(false)}
                       className="text-gray-400 hover:text-white text-sm px-2 py-1 touch-target"
-                      title="Collapse Trends"
+                      title={t('app.simmaster.collapseTrends')}
+                      aria-label="Collapse Trend Graphs panel"
+                      aria-expanded={true}
+                      aria-controls="trends-panel"
                     >
                       &raquo;
                     </button>
@@ -254,8 +306,8 @@ export default function App() {
               )}
             </div>
 
-            {/* Event Log — visible on md+, hidden on smaller screens */}
-            <div className="hidden lg:block w-72 border-l border-gray-700 overflow-y-auto">
+            {/* Event Log */}
+            <div className="w-72 border-l border-gray-700 overflow-y-auto">
               <EventLog />
             </div>
           </div>
@@ -269,6 +321,7 @@ export default function App() {
         <Dashboard />
       </div>
       <SimMasterOverlay enabled={simMasterEnabled} />
+      <PWAInstallPrompt />
     </>
   );
 }
