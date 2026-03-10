@@ -7,6 +7,7 @@ import { GhostDose, TutorialState } from '../types';
 import type { ScenarioQuestion } from '../engine/ScenarioEngine';
 import type { SimMasterAnnotation } from '../ai/simMaster';
 import type { StructuredMessage, VitalAnnotation } from '../engine/conductor/types';
+import type { ScoringSummary } from '../engine/scoringEngine';
 
 interface AIState {
   // Orchestrator
@@ -70,6 +71,9 @@ interface AIState {
   conductorPhase: string | null;
   millieEmotion: string;
 
+  // Scoring
+  lastScenarioScore: ScoringSummary | null;
+
   // Actions
   initializeAI: () => void;
   startAI: () => void;
@@ -105,6 +109,7 @@ interface AIState {
   clearVitalAnnotations: () => void;
   setVitalAnnotations: (annotations: VitalAnnotation[]) => void;
   setMillieEmotion: (emotion: string) => void;
+  setLastScenarioScore: (score: ScoringSummary | null) => void;
 }
 
 const useAIStore = create<AIState>((set, get) => ({
@@ -138,6 +143,7 @@ const useAIStore = create<AIState>((set, get) => ({
   vitalAnnotations: [],
   conductorPhase: null,
   millieEmotion: 'encouraging',
+  lastScenarioScore: null,
 
   initializeAI: () => {
     const orchestrator = new MultiAgentOrchestrator();
@@ -321,6 +327,9 @@ const useAIStore = create<AIState>((set, get) => ({
 
   setMillieEmotion: (emotion) => {
     set({ millieEmotion: emotion });
+  },
+  setLastScenarioScore: (score) => {
+    set({ lastScenarioScore: score });
   },
 }));
 
