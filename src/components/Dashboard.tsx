@@ -20,6 +20,8 @@ import { streamClaude } from '../ai/claudeClient';
 import { buildSimMasterSystemPrompt } from '../ai/simMasterPrompt';
 import { DigitalTwin } from '../engine/digitalTwin';
 import type { SimMasterTeachingMode } from '../store/slices/aiSlice';
+import { checkProactiveTriggers, TriggerCooldowns } from '../ai/mentor';
+import { triggerToOverlayAnnotations } from '../ai/simMasterBridge';
 
 type AITab = 'eeg' | 'mentor' | 'simmaster' | 'oxyhb' | 'frankstarling' | 'echosim' | 'learn';
 
@@ -142,6 +144,7 @@ const SimMasterFeed: React.FC<SimMasterFeedProps> = ({ enabled, onToggle }) => {
   const lastSocraticTimeRef = useRef(0);
   const lastIdleAlertTimeRef = useRef(0);
   const abortRef = useRef<AbortController | null>(null);
+  const triggerCooldownsRef = useRef<TriggerCooldowns>({});
 
   const teachingMode = useAIStore(s => s.simMasterTeachingMode);
   const setTeachingMode = useAIStore(s => s.setSimMasterTeachingMode);
@@ -157,6 +160,7 @@ const SimMasterFeed: React.FC<SimMasterFeedProps> = ({ enabled, onToggle }) => {
     elapsedSeconds: s.elapsedSeconds, speedMultiplier: s.speedMultiplier,
     userIdleSeconds: s.userIdleSeconds, drugsAdministeredCount: s.drugsAdministeredCount,
     isScenarioActive: s.isScenarioActive,
+    eventLog: s.eventLog, digitalTwin: s.digitalTwin,
   }));
   const learnerLevel = useAIStore(s => s.tutorialState?.learnerLevel ?? 'intermediate') as 'novice' | 'intermediate' | 'advanced';
 
@@ -206,6 +210,40 @@ const SimMasterFeed: React.FC<SimMasterFeedProps> = ({ enabled, onToggle }) => {
       if (idleAction) {
         allActions.push(idleAction);
         lastIdleAlertTimeRef.current = Date.now();
+      }
+
+      // Check proactive teaching triggers from mentor.ts (8 clinical patterns)
+      const triggerMsg = checkProactiveTriggers(
+        {
+          vitals: simState.vitals,
+          moass: simState.moass,
+          pkStates: simState.pkStates,
+          eeg: simState.eegState ?? undefined,
+          twin: simState.digitalTwin ?? undefined,
+          eventLog: simState.eventLog,
+        },
+        triggerCooldownsRef.current,
+      );
+      if (triggerMsg) {
+        // Extract trigger type from the cooldown map (last updated entry)
+        const firedType = (Object.entries(triggerCooldownsRef.current) as [string, number][])
+          .sort((a, b) => b[1] - a[1])[0]?.[0];
+        if (firedType) {
+          const overlayAnns = triggerToOverlayAnnotations(
+            firedType as Parameters<typeof triggerToOverlayAnnotations>[0],
+            triggerMsg.content,
+          );
+          for (const ann of overlayAnns) {
+            addOverlayAnnotation(ann);
+          }
+        }
+        // Also add to commentary feed as a suggest_action
+        allActions.push({
+          type: 'suggest_action',
+          message: triggerMsg.content,
+          priority: 90,
+          displayDuration: 15000,
+        });
       }
 
       // Apply teaching mode filter
