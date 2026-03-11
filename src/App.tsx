@@ -4,6 +4,7 @@ import { useShallow } from 'zustand/react/shallow';
 import useSimStore from './store/useSimStore';
 import useAIStore from './store/useAIStore';
 import useLMSStore from './store/useLMSStore';
+import useStudyStore from './store/useStudyStore';
 import PatientBanner from './components/PatientBanner';
 import PatientSelector from './components/PatientSelector';
 import DrugPanel from './components/DrugPanel';
@@ -22,6 +23,9 @@ import { Dashboard } from './components/Dashboard';
 import OfflineBanner from './components/OfflineBanner';
 import PWAInstallPrompt from './components/PWAInstallPrompt';
 import LMSPanel from './components/LMSPanel';
+import StudyEnrollment from './components/StudyEnrollment';
+import TestFramework from './components/TestFramework';
+import StudyDashboard from './components/StudyDashboard';
 import { usePerformanceObserver } from './hooks/usePerformanceObserver';
 
 export default function App() {
@@ -43,6 +47,19 @@ export default function App() {
   const simMasterEnabled = useAIStore(s => s.simMasterEnabled);
   const { initScorm, terminateScorm } = useLMSStore();
 
+  // Study framework state
+  const researchMode = useStudyStore(s => s.researchMode);
+  const setResearchMode = useStudyStore(s => s.setResearchMode);
+  const studyPhase = useStudyStore(s => s.phase);
+  const currentArm = useStudyStore(s => s.currentArm);
+  const learnerId = useStudyStore(s => s.learnerId);
+  const completePretestScore = useStudyStore(s => s.completePretestScore);
+  const startPosttest = useStudyStore(s => s.startPosttest);
+  const completePosttestScore = useStudyStore(s => s.completePosttestScore);
+  const completeCurrentArm = useStudyStore(s => s.completeCurrentArm);
+  const advanceToNextArm = useStudyStore(s => s.advanceToNextArm);
+  const setPhase = useStudyStore(s => s.setPhase);
+
   // Swipe gesture state
   const touchStartX = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
@@ -52,6 +69,11 @@ export default function App() {
     initScorm();
     return () => terminateScorm();
   // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Restore study state from localStorage on mount
+  useEffect(() => {
+    useStudyStore.getState().loadFromStorage();
   }, []);
 
   // Memoize the vitals history array so MonitorPanel's memo check stays stable.
@@ -102,6 +124,9 @@ export default function App() {
     touchStartY.current = null;
   }, [leftPanelOpen]);
 
+  // Determine if we should show the study overlay
+  const showStudyOverlay = researchMode && studyPhase !== 'simulation';
+
   return (
     <>
       {/* Skip navigation for keyboard users */}
@@ -144,9 +169,7 @@ export default function App() {
             />
           )}
 
-          {/* Left Panel - Drug Controls
-              Desktop (lg+): always visible, static column (w-72)
-              Tablet/Mobile (<lg): absolute slide-over drawer, toggled by hamburger/swipe */}
+          {/* Left Panel - Drug Controls */}
           <div className={`
             lg:static lg:translate-x-0 lg:w-72 lg:flex lg:flex-col lg:shrink-0
             border-r border-gray-700 bg-sim-bg overflow-y-auto p-2 space-y-2
@@ -222,15 +245,14 @@ export default function App() {
             </div>
           </div>
 
-          {/* Right Sidebar - Collapsible Intervention Panel
-              Hidden on mobile (<md), collapsible tab on md+, expanded on lg+ if opened */}
+          {/* Right Sidebar - Collapsible Intervention Panel */}
           <div className="hidden md:flex flex-row">
             {!airwayExpanded && (
               <button
                 onClick={() => setAirwayExpanded(true)}
                 className="h-full w-10 flex items-center justify-center bg-gray-800/60 hover:bg-gray-700/80 transition-colors group touch-target"
                 title={t('app.simmaster.expandAirway')}
-                aria-label="Show Airway and O₂ controls"
+                aria-label="Show Airway and O2 controls"
                 aria-expanded={false}
                 aria-controls="airway-panel"
               >
@@ -238,14 +260,14 @@ export default function App() {
               </button>
             )}
             {airwayExpanded && (
-              <div id="airway-panel" className="flex flex-col h-full bg-sim-panel" role="region" aria-label="Airway and O₂ controls">
+              <div id="airway-panel" className="flex flex-col h-full bg-sim-panel" role="region" aria-label="Airway and O2 controls">
                 <div className="flex items-center justify-between px-2 py-1 border-b border-gray-700">
                   <span className="text-xs text-gray-400 uppercase tracking-wider font-semibold">{t('app.simmaster.airwayTitle')}</span>
                   <button
                     onClick={() => setAirwayExpanded(false)}
                     className="text-gray-400 hover:text-white text-sm px-2 py-1 touch-target"
                     title={t('app.simmaster.collapseAirway')}
-                    aria-label="Collapse Airway and O₂ panel"
+                    aria-label="Collapse Airway and O2 panel"
                     aria-expanded={true}
                     aria-controls="airway-panel"
                   >
@@ -259,8 +281,7 @@ export default function App() {
             )}
           </div>
 
-          {/* Right side: LMS Panel + Event Log + Collapsible Trends
-              Trends collapsed by default on tablet, event log hidden on mobile */}
+          {/* Right side: LMS Panel + Event Log + Collapsible Trends */}
           <div className="hidden md:flex flex-row" role="complementary" aria-label="Trends and event log">
             {/* LMS / xAPI / SCORM Panel */}
             <LMSPanel />
@@ -322,6 +343,88 @@ export default function App() {
       </div>
       <SimMasterOverlay enabled={simMasterEnabled} />
       <PWAInstallPrompt />
+
+      {/* Research Mode toggle button — fixed bottom-left */}
+      <button
+        onClick={() => setResearchMode(!researchMode)}
+        className={`fixed bottom-16 left-4 z-50 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all shadow-lg ${
+          researchMode
+            ? 'bg-emerald-600 text-white hover:bg-emerald-500'
+            : 'bg-gray-700/80 text-gray-400 hover:bg-gray-600 hover:text-white'
+        }`}
+        title={researchMode ? 'Research Mode ON' : 'Enable Research Mode'}
+      >
+        {researchMode ? 'Research ON' : 'Research Mode'}
+      </button>
+
+      {/* Study framework overlay — shown when research mode is active and not in simulation phase */}
+      {showStudyOverlay && (
+        <div className="fixed inset-0 z-[100] bg-gray-950/95 flex items-center justify-center overflow-y-auto">
+          <div className="w-full max-h-full py-8">
+            {(studyPhase === 'not_enrolled' || studyPhase === 'consent') && <StudyEnrollment />}
+            {studyPhase === 'pretest' && (
+              <TestFramework
+                testType="pretest"
+                onComplete={(score) => {
+                  completePretestScore(score);
+                  setPhase('simulation');
+                }}
+              />
+            )}
+            {studyPhase === 'posttest' && (
+              <TestFramework
+                testType="posttest"
+                onComplete={(score) => {
+                  completePosttestScore(score);
+                  completeCurrentArm();
+                  advanceToNextArm();
+                }}
+              />
+            )}
+            {studyPhase === 'between_arms' && (
+              <div className="max-w-lg mx-auto p-6 bg-gray-900 border border-gray-700 rounded-xl space-y-4 text-center">
+                <h2 className="text-lg font-bold text-white">Arm Complete!</h2>
+                <p className="text-sm text-gray-400">
+                  Great work! Ready for the next learning arm?
+                </p>
+                <StudyEnrollment />
+                <button
+                  onClick={() => setPhase('pretest')}
+                  className="w-full py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded font-semibold transition-colors"
+                >
+                  Start Next Arm
+                </button>
+              </div>
+            )}
+            {studyPhase === 'completed' && <StudyDashboard />}
+
+            {/* Exit research mode link */}
+            {(studyPhase === 'not_enrolled' || studyPhase === 'consent' || studyPhase === 'completed') && (
+              <div className="text-center mt-4">
+                <button
+                  onClick={() => setResearchMode(false)}
+                  className="text-xs text-gray-500 hover:text-gray-300 transition-colors"
+                >
+                  Exit Research Mode
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Study active indicator bar — shown during simulation in research mode */}
+      {researchMode && studyPhase === 'simulation' && (
+        <div className="fixed top-0 left-0 right-0 z-[60] bg-emerald-900/90 text-emerald-200 text-[10px] font-semibold text-center py-1 flex items-center justify-center gap-4">
+          <span>RESEARCH MODE &mdash; Arm {currentArm} | ID: {learnerId}</span>
+          <button
+            onClick={startPosttest}
+            className="px-2 py-0.5 bg-emerald-700 hover:bg-emerald-600 rounded text-[10px] transition-colors"
+          >
+            End Session &rarr; Post-Test
+          </button>
+        </div>
+      )}
     </>
   );
 }

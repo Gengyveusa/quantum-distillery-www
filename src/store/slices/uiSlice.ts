@@ -8,6 +8,7 @@ import { calculateVitals, checkAlarms, BASELINE_VITALS, IVFluidContext } from '.
 import { generateEEG } from '../../engine/eegModel';
 import { createDigitalTwin, updateTwin } from '../../engine/digitalTwin';
 import { sessionRecorderInstance } from '../../engine/sessionRecorderInstance';
+import { analyticsEngine } from '../../engine/analytics';
 import { computeVisualizationState, DEFAULT_VIZ_STATE } from './vitalsSlice';
 import { INITIAL_PK_STATES } from './drugSlice';
 import type { SimStore } from '../storeTypes';
@@ -186,6 +187,28 @@ export const createUiSlice: StateCreator<SimStore, [], [], UiSlice> = (set, get)
 
     const newUserIdleSeconds = state.userIdleSeconds + dt;
 
+    // Study analytics: capture vital snapshot every 10 seconds and alarm events
+    if (analyticsEngine.isActive()) {
+      if (newTime % 10 === 0) {
+        analyticsEngine.log('vital_snapshot', {
+          hr: newVitals.hr, sbp: newVitals.sbp, dbp: newVitals.dbp ?? 0,
+          spo2: newVitals.spo2, rr: newVitals.rr, etco2: newVitals.etco2,
+          moass, combinedEff, riskScore: newDigitalTwin.predictedOutcome.compositeRisk,
+        });
+      }
+      // Log new alarms
+      activeAlarms.forEach(alarm => {
+        const alreadyActive = state.activeAlarms.some(
+          a => a.type === alarm.type && a.severity === alarm.severity
+        );
+        if (!alreadyActive) {
+          analyticsEngine.log('vital_alarm_fired', {
+            type: alarm.type, severity: alarm.severity, message: alarm.message,
+          });
+        }
+      });
+    }
+
     // Record snapshot for session playback
     sessionRecorderInstance.record({
       t: newTime,
@@ -227,10 +250,16 @@ export const createUiSlice: StateCreator<SimStore, [], [], UiSlice> = (set, get)
   },
 
   setActiveTab: (tab) => {
+    if (analyticsEngine.isActive() && tab) {
+      analyticsEngine.log('tab_opened', { tab });
+    }
     set({ activeTab: tab, lastUserInteraction: Date.now(), userIdleSeconds: 0 });
   },
 
   setActiveGaugeMode: (mode) => {
+    if (analyticsEngine.isActive()) {
+      analyticsEngine.log('gauge_mode_changed', { mode });
+    }
     set({ activeGaugeMode: mode, lastUserInteraction: Date.now(), userIdleSeconds: 0 });
   },
 

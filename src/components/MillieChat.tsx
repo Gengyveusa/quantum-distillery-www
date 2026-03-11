@@ -11,6 +11,7 @@ import { DigitalTwin } from '../engine/digitalTwin';
 import useSimStore from '../store/useSimStore';
 import useAIStore from '../store/useAIStore';
 import { conductorInstance } from '../engine/conductor/conductorInstance';
+import { analyticsEngine } from '../engine/analytics';
 import GhostDosePreview from './GhostDosePreview';
 import { ScenarioPanel } from './ScenarioPanel';
 import ScenarioTimeline from './ScenarioTimeline';
@@ -342,6 +343,11 @@ const MillieChat: React.FC<MillieChatProps> = ({
     const text = query || input.trim();
     if (!text || isThinking) return;
 
+    // Study analytics: log learner question
+    if (analyticsEngine.isActive()) {
+      analyticsEngine.log('learner_question_asked', { question: text });
+    }
+
     addStructuredMessage({
       id: `user-${Date.now()}`,
       role: 'user',
@@ -350,6 +356,9 @@ const MillieChat: React.FC<MillieChatProps> = ({
     });
     setInput('');
     setIsThinking(true);
+
+    // Track response time for analytics
+    const questionStartTs = Date.now();
 
     // Show typing indicator
     const placeholderId = `stream-${Date.now()}`;
@@ -377,6 +386,14 @@ const MillieChat: React.FC<MillieChatProps> = ({
           // chunks arrive but we'll update via final response
         },
       );
+
+      // Study analytics: log mentor response
+      if (analyticsEngine.isActive()) {
+        analyticsEngine.log('mentor_answer_received', {
+          answer: response.content.slice(0, 200),
+          latency_ms: Date.now() - questionStartTs,
+        });
+      }
 
       // Add the real response
       addStructuredMessage({

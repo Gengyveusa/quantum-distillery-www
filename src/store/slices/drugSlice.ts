@@ -2,6 +2,7 @@ import { StateCreator } from 'zustand';
 import { PKState, InfusionState, LogEntry } from '../../types';
 import { DRUG_DATABASE } from '../../engine/drugs';
 import { createInitialPKState, stepPK } from '../../engine/pkModel';
+import { analyticsEngine } from '../../engine/analytics';
 import type { SimStore } from '../storeTypes';
 
 export interface IVFluidState {
@@ -77,6 +78,15 @@ export const createDrugSlice: StateCreator<SimStore, [], [], DrugSlice> = (set, 
       severity: 'info',
     };
 
+    // Study analytics: log bolus
+    if (analyticsEngine.isActive()) {
+      analyticsEngine.log('drug_bolus', {
+        drug: drug.name, dose, unit: drug.unit,
+        weight_kg: state.patient.weight,
+        dose_per_kg: dose / state.patient.weight,
+      });
+    }
+
     set({
       pkStates: { ...state.pkStates, [drugName]: newState },
       eventLog: [...state.eventLog, logEntry],
@@ -98,6 +108,11 @@ export const createDrugSlice: StateCreator<SimStore, [], [], DrugSlice> = (set, 
       severity: 'info',
     };
 
+    // Study analytics: log infusion start
+    if (analyticsEngine.isActive()) {
+      analyticsEngine.log('drug_infusion_start', { drug: drug.name, rate, unit: 'mcg/kg/min' });
+    }
+
     set({
       infusions: {
         ...state.infusions,
@@ -118,6 +133,11 @@ export const createDrugSlice: StateCreator<SimStore, [], [], DrugSlice> = (set, 
       message: `${infusion.drugName} infusion stopped`,
       severity: 'info',
     };
+
+    // Study analytics: log infusion stop
+    if (analyticsEngine.isActive()) {
+      analyticsEngine.log('drug_infusion_stop', { drug: infusion.drugName });
+    }
 
     const newInfusions = { ...state.infusions };
     delete newInfusions[drugName];

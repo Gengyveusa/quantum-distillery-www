@@ -1,5 +1,6 @@
 import { StateCreator } from 'zustand';
 import { InterventionType, AirwayDevice, LogEntry } from '../../types';
+import { analyticsEngine } from '../../engine/analytics';
 import type { SimStore } from '../storeTypes';
 
 export interface ScenarioSlice {
@@ -37,6 +38,11 @@ export const createScenarioSlice: StateCreator<SimStore, [], [], ScenarioSlice> 
       severity: 'info',
     };
 
+    // Study analytics: log intervention applied
+    if (analyticsEngine.isActive()) {
+      analyticsEngine.log('intervention_applied', { type: intervention });
+    }
+
     set({
       interventions: newInterventions,
       eventLog: [...state.eventLog, logEntry],
@@ -57,6 +63,11 @@ export const createScenarioSlice: StateCreator<SimStore, [], [], ScenarioSlice> 
       message: `Removed: ${intervention.replace('_', ' ')}`,
       severity: 'info',
     };
+
+    // Study analytics: log intervention removed
+    if (analyticsEngine.isActive()) {
+      analyticsEngine.log('intervention_removed', { type: intervention });
+    }
 
     set({
       interventions: newInterventions,
