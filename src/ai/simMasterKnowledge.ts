@@ -226,7 +226,7 @@ export const CLINICAL_PATTERNS: ClinicalPattern[] = [
     ],
   },
 
-  // 2. Hemodynamic Compromise
+  // 2. Hemodynamic Compromise (compensated)
   {
     id: 'hemodynamic_compromise',
     name: 'Hemodynamic Compromise',
@@ -237,10 +237,9 @@ export const CLINICAL_PATTERNS: ClinicalPattern[] = [
     explanation:
       'Propofol causes dose-dependent vasodilation (reduced SVR) and direct myocardial depression (reduced contractility). ' +
       'Blood pressure drops as MAP = CO × SVR, with both components impaired. Initially, baroreceptor-mediated tachycardia ' +
-      'compensates — HR rises to maintain cardiac output. If propofol concentration continues to rise or volume status is ' +
-      'inadequate, compensatory tachycardia fails: HR may paradoxically drop as myocardial oxygen supply-demand mismatch ' +
-      'worsens. The Frank-Starling curve shifts downward (reduced Ees slope) and leftward (reduced preload from venodilation). ' +
-      'Decompensation — bradycardia with hypotension — signals imminent cardiovascular collapse.',
+      'compensates — HR rises to maintain cardiac output. The Frank-Starling curve shifts downward (reduced Ees slope) ' +
+      'and leftward (reduced preload from venodilation). This is the compensated phase where the body is still maintaining ' +
+      'cardiac output through increased heart rate, but further drug effect or volume depletion may tip into decompensation.',
     expectedLearnerAction:
       'Reduce propofol infusion rate → IV fluid bolus (250-500 mL crystalloid) → Trendelenburg position → ' +
       'ephedrine 5-10 mg IV or phenylephrine 100 mcg if fluid-unresponsive → consider stopping propofol.',
@@ -253,7 +252,36 @@ export const CLINICAL_PATTERNS: ClinicalPattern[] = [
     ],
   },
 
-  // 3. Oversedation Trajectory
+  // 3. Hemodynamic Decompensation
+  {
+    id: 'hemodynamic_decompensation',
+    name: 'Hemodynamic Decompensation',
+    conditions: [
+      { parameter: 'sbp', operator: '<', value: 75 },
+      { parameter: 'hr', operator: '<', value: 60 },
+    ],
+    explanation:
+      'Hemodynamic decompensation occurs when compensatory tachycardia fails and the heart can no longer maintain ' +
+      'cardiac output. Unlike compensated hemodynamic compromise (BP↓ + HR↑), decompensation presents with both ' +
+      'hypotension AND bradycardia (BP↓↓ + HR↓). This signals that the baroreceptor reflex has been overwhelmed — ' +
+      'myocardial oxygen supply-demand mismatch has worsened to the point where the heart cannot sustain elevated rates. ' +
+      'Propofol\'s direct myocardial depression compounds the problem: contractility is reduced at the same time that ' +
+      'preload is falling from venodilation. The combination of low SVR, low HR, and low contractility produces ' +
+      'critically low cardiac output. Without immediate intervention, cardiac arrest is imminent.',
+    expectedLearnerAction:
+      'STOP all sedative agents immediately → IV fluid bolus → atropine 0.5 mg IV for bradycardia → ' +
+      'epinephrine 10-20 mcg IV push if severe → Trendelenburg position → prepare for cardiac arrest protocol.',
+    panelsToHighlight: ['bp', 'hr', 'ecg-wave', 'intervention-panel'],
+    socraticQuestions: [
+      'BP is falling AND HR is dropping. How is this different from the earlier pattern of BP↓ + HR↑? What has changed?',
+      'The baroreceptor reflex is failing. What does this tell you about the severity of cardiovascular compromise?',
+      'Why is atropine your first-line drug here, and at what point do you escalate to epinephrine?',
+      'This patient was previously tachycardic to compensate. What caused the transition from compensation to decompensation?',
+      'If you could only choose one intervention right now — fluid, atropine, or stopping propofol — which would you choose and why?',
+    ],
+  },
+
+  // 4. Oversedation Trajectory
   {
     id: 'oversedation_trajectory',
     name: 'Oversedation Trajectory',
@@ -280,7 +308,7 @@ export const CLINICAL_PATTERNS: ClinicalPattern[] = [
     ],
   },
 
-  // 4. Drug Synergy Effects
+  // 5. Drug Synergy Effects
   {
     id: 'drug_synergy_effects',
     name: 'Drug Synergy Effects',
@@ -307,7 +335,7 @@ export const CLINICAL_PATTERNS: ClinicalPattern[] = [
     ],
   },
 
-  // 5. Airway Obstruction Sequence
+  // 6. Airway Obstruction Sequence
   {
     id: 'airway_obstruction_sequence',
     name: 'Airway Obstruction Sequence',
@@ -336,7 +364,7 @@ export const CLINICAL_PATTERNS: ClinicalPattern[] = [
     ],
   },
 
-  // 6. Paradoxical Reactions
+  // 7. Paradoxical Reactions
   {
     id: 'paradoxical_reactions',
     name: 'Paradoxical Reactions',
@@ -364,7 +392,7 @@ export const CLINICAL_PATTERNS: ClinicalPattern[] = [
     ],
   },
 
-  // 7. Malignant Hyperthermia
+  // 8. Malignant Hyperthermia
   {
     id: 'malignant_hyperthermia',
     name: 'Malignant Hyperthermia',

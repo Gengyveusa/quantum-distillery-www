@@ -947,7 +947,7 @@ function makeAnnotationId(): string {
  * Severity mapping from pattern detection to annotation severity.
  */
 function patternSeverity(pattern: ClinicalPattern): 'info' | 'warning' | 'critical' {
-  const criticalPatterns = ['respiratory_depression_cascade', 'malignant_hyperthermia', 'airway_obstruction_sequence'];
+  const criticalPatterns = ['respiratory_depression_cascade', 'malignant_hyperthermia', 'airway_obstruction_sequence', 'hemodynamic_decompensation'];
   const warningPatterns = ['hemodynamic_compromise', 'oversedation_trajectory', 'drug_synergy_effects'];
   if (criticalPatterns.includes(pattern.id)) return 'critical';
   if (warningPatterns.includes(pattern.id)) return 'warning';
