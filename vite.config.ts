@@ -2,8 +2,12 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
+// When built on Netlify, serve from root (/). Otherwise keep the legacy
+// GitHub Pages subpath so existing LMS embeds continue to resolve.
+const basePath = process.env.NETLIFY ? '/' : '/sedsim/';
+
 export default defineConfig({
-  base: '/sedsim/',
+  base: basePath,
   plugins: [
     react(),
     VitePWA({
@@ -16,8 +20,8 @@ export default defineConfig({
         theme_color: '#0a0a0f',
         background_color: '#0a0a0f',
         display: 'standalone',
-        start_url: '/sedsim/',
-        scope: '/sedsim/',
+        start_url: basePath,
+        scope: basePath,
         icons: [
           {
             src: 'pwa-192x192.png',
