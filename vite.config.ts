@@ -4,7 +4,7 @@ import { VitePWA } from 'vite-plugin-pwa';
 
 // When built on Netlify, serve from root (/). Otherwise keep the legacy
 // GitHub Pages subpath so existing LMS embeds continue to resolve.
-const basePath = process.env.NETLIFY ? '/' : '/sedsim/';
+const basePath = process.env.NETLIFY ? '/' : '/quantum-distillery-www/';
 
 export default defineConfig({
   base: basePath,
