@@ -228,6 +228,11 @@ export default function LandingPage() {
         .qd-nav { position:sticky; top:0; z-index:20; }
         .qd-nav.qd-glass { border-radius:0; border-left:none; border-right:none; border-top:none; }
         .qd-nav.qd-glass::before { border-radius:0; }
+        /* Narrow screens: stop the links crowding the brand — wrap and centre. */
+        @media (max-width: 640px) {
+          .qd-nav { flex-wrap:wrap; justify-content:center; gap:8px 18px; padding:14px 20px; text-align:center; }
+          .qd-nav > div { flex-wrap:wrap; justify-content:center; gap:12px 18px; }
+        }
 
         @media (prefers-reduced-transparency: reduce) {
           .qd-glass { -webkit-backdrop-filter:none; backdrop-filter:none; background: rgba(28,20,9,0.92); }
