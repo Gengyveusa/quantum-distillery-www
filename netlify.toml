@@ -1,0 +1,19 @@
+# Netlify build configuration, captured in-repo for reproducibility.
+# Mirrors the existing dashboard settings — no behavioural change.
+#
+# Notes:
+# - Netlify sets NETLIFY=true during builds, which flips vite.config.ts to
+#   base:'/' (the apex-domain build). No need to set it here.
+# - SPA routing lives in public/_redirects (copied into dist on build); kept
+#   there rather than duplicated below.
+# - Secrets / per-context vars (e.g. VITE_CLAUDE_PROXY_URL) stay in the Netlify
+#   dashboard, not in source control.
+# - Dependency install is automatic; .npmrc (legacy-peer-deps=true) is honoured.
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  # Pin to the Node version CI builds and tests against.
+  NODE_VERSION = "20"
