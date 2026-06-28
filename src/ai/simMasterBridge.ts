@@ -13,7 +13,8 @@
  */
 
 import type { TeachingMode, SimMasterV4Annotation } from '../store/slices/aiSlice';
-import type { SimMasterContext, ProactiveTriggerType } from './simMaster';
+import type { SimMasterContext } from './simMaster';
+import type { ProactiveTriggerType } from './mentor';
 import {
   evaluateV4Patterns,
   triggerToAnnotations,
