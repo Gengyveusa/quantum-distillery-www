@@ -1,5 +1,40 @@
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
+import FluidStarfield from './components/FluidStarfield';
+
+/* ---- Liquid Glass capability tier ----
+ * Picks the best material the browser can render. See the inline comment on the
+ * `native` branch: there is currently NO public web API for Liquid Glass, so that
+ * branch is an inert, forward-compatible placeholder. Tier 'svg' is the real ceiling. */
+type GlassTier = 'native' | 'svg' | 'blur' | 'solid';
+
+function pickGlassTier(): GlassTier {
+  if (typeof window === 'undefined' || !window.CSS || !CSS.supports) return 'blur';
+  if (window.matchMedia?.('(prefers-reduced-transparency: reduce)').matches) return 'solid';
+
+  // Tier 1 — native WebKit Liquid Glass.
+  // As of iOS/Safari 27 (June 2026) the only known property is the PRIVATE
+  // `-apple-visual-effect`, gated behind the private WKPreferences flag
+  // `useSystemAppearance`. It does NOT work on the open web and is not App
+  // Store-safe. There is currently NO public web API for Liquid Glass. This
+  // check stays inert until/unless Apple ships a standardized, publicly
+  // detectable property — at which point this is the only edit needed.
+  const NATIVE_GLASS_PROP = '-apple-visual-effect';
+  if (CSS.supports(NATIVE_GLASS_PROP, 'liquid')) return 'native';
+
+  const hasBackdrop =
+    CSS.supports('backdrop-filter', 'blur(2px)') ||
+    CSS.supports('-webkit-backdrop-filter', 'blur(2px)');
+  if (!hasBackdrop) return 'solid';
+
+  // SVG displacement refraction needs a url() filter inside backdrop-filter, and
+  // we drop it under reduced-motion. Otherwise fall back to plain blur.
+  if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return 'blur';
+  const hasUrlBackdrop =
+    CSS.supports('backdrop-filter', 'url(#x)') ||
+    CSS.supports('-webkit-backdrop-filter', 'url(#x)');
+  return hasUrlBackdrop ? 'svg' : 'blur';
+}
 
 /* ---- Quantum Distillery Brand Tokens ---- */
 const C = {
@@ -89,6 +124,9 @@ const tabContent: Record<string, { title: string; body: string; insight: string 
 export default function LandingPage() {
   const navigate = useNavigate();
   const obs = useRef<IntersectionObserver | null>(null);
+  // Resolve the glass tier on the client (defaults to 'blur' for the first paint).
+  const [glassTier, setGlassTier] = useState<GlassTier>('blur');
+  useEffect(() => { setGlassTier(pickGlassTier()); }, []);
   const [activeTabs, setActiveTabs] = useState<Record<string, string | null>>({
     Mathematics: null,
     Physics: null,
@@ -111,7 +149,19 @@ export default function LandingPage() {
   }, []);
 
   return (
-    <div style={{ background:C.bg, minHeight:'100vh', color:C.cream, fontFamily:font.sans }}>
+    <div className={`qd-root qd-tier-${glassTier}`} style={{ background:'transparent', minHeight:'100vh', color:C.cream, fontFamily:font.sans, position:'relative' }}>
+
+      {/* ---- FLUID STARFIELD (fixed, behind everything; paints the base colour) ---- */}
+      <FluidStarfield baseColor={C.bg} />
+
+      {/* ---- SHARED SVG DISPLACEMENT FILTER (one def, reused by every glass panel) ---- */}
+      <svg width="0" height="0" aria-hidden="true" style={{ position:'absolute' }}>
+        <filter id="qd-glass-distort" x="-20%" y="-20%" width="140%" height="140%" colorInterpolationFilters="sRGB">
+          <feTurbulence type="fractalNoise" baseFrequency="0.008 0.012" numOctaves={2} seed={7} result="noise" />
+          <feGaussianBlur in="noise" stdDeviation="1.2" result="softNoise" />
+          <feDisplacementMap in="SourceGraphic" in2="softNoise" scale={14} xChannelSelector="R" yChannelSelector="G" />
+        </filter>
+      </svg>
 
       {/* ---- GLOBAL ANIMATION STYLES ---- */}
       <style>{`
@@ -126,10 +176,74 @@ export default function LandingPage() {
         .qd-link:hover { color:${C.amberBright}!important; }
         .qd-tab-content { max-height:0; overflow:hidden; transition:max-height .5s ease, opacity .5s ease, padding .5s ease; opacity:0; padding:0 24px; }
         .qd-tab-content.open { max-height:600px; opacity:1; padding:24px; }
+
+        /* ---- LIQUID GLASS MATERIAL ---- */
+        html, body { background:${C.bg}; }
+        .qd-root {
+          --qd-glass-blur: 18px;
+          --qd-glass-sat: 180%;
+          --qd-glass-tint: rgba(245,232,200,0.05);   /* low-alpha cream */
+          --qd-glass-radius: 18px;
+          --qd-glass-border: rgba(255,208,96,0.22);
+        }
+        /* Frosted base + specular rim + depth. Sits over the starfield, so the
+           drifting stars show through and bend at the edges. */
+        .qd-glass {
+          position: relative;
+          background: var(--qd-glass-tint);
+          -webkit-backdrop-filter: blur(var(--qd-glass-blur)) saturate(var(--qd-glass-sat));
+          backdrop-filter: blur(var(--qd-glass-blur)) saturate(var(--qd-glass-sat));
+          border: 1px solid var(--qd-glass-border);
+          border-radius: var(--qd-glass-radius);
+          box-shadow: 0 8px 32px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.18);
+          transition: background .25s ease, transform .25s ease, box-shadow .25s ease;
+        }
+        /* Specular rim: bright top-left highlight fading out. */
+        .qd-glass::before {
+          content:''; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
+          background: linear-gradient(135deg, rgba(255,255,255,0.22), rgba(255,255,255,0) 42%);
+          mix-blend-mode: screen; opacity:.6;
+        }
+        /* Faint gold inner glow. */
+        .qd-glass::after {
+          content:''; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
+          box-shadow: inset 0 0 40px rgba(240,165,34,0.06);
+        }
+        .qd-glass:hover { background: rgba(245,232,200,0.09); transform: translateY(-2px); }
+
+        /* Tier 2/native — add edge refraction by chaining the SVG displacement
+           into the backdrop filter (one shared #qd-glass-distort def). */
+        .qd-tier-svg .qd-glass, .qd-tier-native .qd-glass {
+          -webkit-backdrop-filter: blur(var(--qd-glass-blur)) saturate(var(--qd-glass-sat)) url(#qd-glass-distort);
+          backdrop-filter: blur(var(--qd-glass-blur)) saturate(var(--qd-glass-sat)) url(#qd-glass-distort);
+        }
+        /* Tier 3 (blur) uses the base class as-is. Tier 4 (solid) drops transparency. */
+        .qd-tier-solid .qd-glass {
+          -webkit-backdrop-filter:none; backdrop-filter:none;
+          background: rgba(28,20,9,0.92);
+        }
+        .qd-tier-solid .qd-glass::before { display:none; }
+
+        /* Nav variant: full-width sticky bar, flat (no radius / side borders). */
+        .qd-nav { position:sticky; top:0; z-index:20; }
+        .qd-nav.qd-glass { border-radius:0; border-left:none; border-right:none; border-top:none; }
+        .qd-nav.qd-glass::before { border-radius:0; }
+
+        @media (prefers-reduced-transparency: reduce) {
+          .qd-glass { -webkit-backdrop-filter:none; backdrop-filter:none; background: rgba(28,20,9,0.92); }
+          .qd-glass::before { display:none; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .qd-tier-svg .qd-glass, .qd-tier-native .qd-glass {
+            -webkit-backdrop-filter: blur(var(--qd-glass-blur)) saturate(var(--qd-glass-sat));
+            backdrop-filter: blur(var(--qd-glass-blur)) saturate(var(--qd-glass-sat));
+          }
+          .qd-glass:hover { transform:none; }
+        }
       `}</style>
 
       {/* ---- NAV ---- */}
-      <nav style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'20px 40px', borderBottom:`1px solid ${C.border}` }}>
+      <nav className="qd-nav qd-glass" style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'20px 40px' }}>
         <span style={{ color:C.amber, fontSize:13, letterSpacing:'.2em', textTransform:'uppercase', fontFamily:font.sans, fontWeight:700 }}>The Quantum Distillery</span>
         <div style={{ display:'flex', gap:28 }}>
           <a href="https://thequantumdistillery.substack.com" className="qd-link" style={{ color:C.muted, textDecoration:'none', fontSize:13, letterSpacing:'.1em', fontFamily:font.sans, transition:'color .2s' }}>Substack</a>
@@ -147,12 +261,12 @@ export default function LandingPage() {
         <p style={{ color:C.cream, fontSize:17, maxWidth:560, margin:'0 auto 48px', lineHeight:1.7, fontFamily:font.serif, fontStyle:'italic', opacity:.85 }}>Distilling complexity into clarity — from the quantum to the clinical</p>
         <div style={{ display:'flex', gap:16, justifyContent:'center', flexWrap:'wrap' }}>
           <button onClick={() => navigate('/sim')} className="qd-btn" style={{ background:C.amber, color:C.bg, border:'none', padding:'14px 32px', fontSize:13, letterSpacing:'.12em', textTransform:'uppercase', fontFamily:font.sans, fontWeight:700, cursor:'pointer', transition:'all .2s' }}>Launch SedSim</button>
-          <a href="https://thequantumdistillery.substack.com" className="qd-btn2" style={{ border:`1px solid ${C.amber}`, color:C.amber, background:'transparent', padding:'14px 32px', fontSize:13, letterSpacing:'.12em', textTransform:'uppercase', fontFamily:font.sans, fontWeight:700, textDecoration:'none', transition:'all .2s' }}>Read the Pours</a>
+          <a href="https://thequantumdistillery.substack.com" className="qd-btn2 qd-glass" style={{ border:`1px solid ${C.amber}`, color:C.amber, borderRadius:6, padding:'14px 32px', fontSize:13, letterSpacing:'.12em', textTransform:'uppercase', fontFamily:font.sans, fontWeight:700, textDecoration:'none', transition:'all .2s' }}>Read the Pours</a>
         </div>
       </section>
 
       {/* ---- DEFINITION I: DISTILLERY ---- */}
-      <section className="qd-fade" style={{ maxWidth:780, margin:'0 auto', padding:'80px 24px', borderTop:`1px solid ${C.border}` }}>
+      <section className="qd-fade qd-glass" style={{ maxWidth:780, margin:'48px auto', padding:'56px 44px' }}>
         <p style={{ color:C.amber, fontSize:12, letterSpacing:'.3em', marginBottom:8 }}><span style={{ fontFamily:font.serif, fontStyle:'italic', fontSize:20, marginRight:8 }}>I</span>&nbsp;&nbsp;noun &bull; /dɪˈstɪləri/</p>
         <h2 style={{ fontFamily:"'Playfair Display',serif", fontSize:32, color:C.gold, marginBottom:20 }}>Distillery</h2>
         <p style={{ color:C.cream, lineHeight:1.8, fontSize:16, opacity:.85 }}>A place where raw, complex ingredients are subjected to heat and pressure, separated into their essential components, and refined into something pure, potent, and concentrated. The crude is transformed into the clear. The chaotic is reduced to its essence.</p>
@@ -160,7 +274,7 @@ export default function LandingPage() {
       </section>
 
       {/* ---- DEFINITION II: QUANTUM DISTILLERY ---- */}
-      <section className="qd-fade" style={{ maxWidth:780, margin:'0 auto', padding:'80px 24px', borderTop:`1px solid ${C.border}` }}>
+      <section className="qd-fade qd-glass" style={{ maxWidth:780, margin:'48px auto', padding:'56px 44px' }}>
         <p style={{ color:C.amber, fontSize:12, letterSpacing:'.3em', marginBottom:8 }}><span style={{ fontFamily:font.serif, fontStyle:'italic', fontSize:20, marginRight:8 }}>II</span>&nbsp;&nbsp;noun &bull; /ˈkwɒntəm dɪˈstɪləri/</p>
         <h2 style={{ fontFamily:"'Playfair Display',serif", fontSize:32, color:C.gold, marginBottom:20 }}>The Quantum Distillery</h2>
         <p style={{ color:C.cream, lineHeight:1.8, fontSize:16, opacity:.85 }}>An intellectual framework where the deepest principles of mathematics, physics, and biology are distilled from their native complexity into accessible, interconnected understanding. We take the raw substrate of scientific knowledge — wave functions, thermodynamic gradients, enzyme kinetics, information entropy — and refine them into clear, potent insight about how life actually works, from the subatomic to the surgical.</p>
@@ -259,7 +373,7 @@ export default function LandingPage() {
       {/* ---- PRODUCT GRID ---- */}
       <section style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(260px,1fr))', gap:24, maxWidth:1100, margin:'0 auto', padding:'0 24px 80px' }}>
         {[{icon:'💉',name:'SedSim',desc:'High-fidelity anesthesia and sedation simulation. Real-time vital sign modeling, AI clinical mentor, and pharmacokinetic engine for oral surgery training.',live:true},{icon:'📚',name:'The Learning Shed',desc:'AI-powered didactic engine with Socratic, Narrative, and Visual pedagogical agents. Phase 1 of the AI Pedagogical Synergy Study. Content learning, distilled.',live:false},{icon:'🤖',name:'AI Assist Lab',desc:'Investigating how AI should assist during live sedation. Passive alerting, conversational co-pilot, and predictive dashboard modalities under clinical evaluation.',live:false},{icon:'⚛️',name:'It from Qubit',desc:'Quantum biology, information theory, and the Epoch #4 framework. Exploring how energy becomes information, how information becomes life, and what that means for medicine.',live:false}].map(p => (
-          <div key={p.name} className="qd-card qd-fade" style={{ background:C.card, border:`1px solid ${C.border}`, padding:32, transition:'background .3s', position:'relative' }}>
+          <div key={p.name} className="qd-glass qd-fade" style={{ padding:32, position:'relative' }}>
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:20 }}>
               <span style={{ fontSize:10, letterSpacing:'.15em', textTransform:'uppercase', color: p.live ? C.amber : C.dim, border:`1px solid ${p.live ? C.amber : C.dim}`, padding:'4px 10px' }}>{p.live ? 'Live' : 'Coming Soon'}</span>
               <span style={{ fontSize:32 }}>{p.icon}</span>
@@ -272,7 +386,7 @@ export default function LandingPage() {
       </section>
 
       {/* ---- RESEARCH BANNER ---- */}
-      <section className="qd-fade" style={{ maxWidth:900, margin:'0 auto', padding:'80px 24px', textAlign:'center', borderTop:`1px solid ${C.border}` }}>
+      <section className="qd-fade qd-glass" style={{ maxWidth:900, margin:'48px auto', padding:'56px 44px', textAlign:'center' }}>
         <p style={{ color:C.amber, fontSize:12, letterSpacing:'.3em', textTransform:'uppercase', marginBottom:12 }}>Active Research</p>
         <h2 style={{ fontFamily:"'Playfair Display',serif", fontSize:'clamp(24px,4vw,36px)', color:C.gold, marginBottom:16 }}>The AI Pedagogical Synergy Study</h2>
         <p style={{ color:C.cream, maxWidth:700, margin:'0 auto 30px', lineHeight:1.8, fontSize:15, opacity:.85 }}>A closed-loop investigation evaluating how distinct AI teaching personas affect knowledge acquisition and clinical performance across students, residents, and attendings. Validated using Kirkpatrick evaluation and NASA-TLX cognitive load metrics. From the didactic to the simulated to the surgical.</p>
