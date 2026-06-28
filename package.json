@@ -16,7 +16,6 @@
     "lint": "eslint src"
   },
   "dependencies": {
-    "@types/react-router-dom": "^5.3.3",
     "i18next": "^25.8.17",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
