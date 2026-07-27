@@ -59,4 +59,8 @@ jobs:
           node-version: '20'
           cache: 'npm'
       - run: npm install --legacy-peer-deps
+      # `npm run build` ends with scripts/prerender.mjs, which drives a real
+      # browser. npm install brings in the playwright package but not its
+      # browser binary, so install that explicitly.
+      - run: npx playwright install --with-deps chromium
       - run: npm run build
