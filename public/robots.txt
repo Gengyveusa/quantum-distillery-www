@@ -81,5 +81,7 @@ Allow: /
 User-agent: *
 Disallow: /undercut
 Disallow: /undercut/
+# Instructor dashboard — a tool, not content.
+Disallow: /instructor
 
 Sitemap: https://thequantumdistillery.com/sitemap.xml
