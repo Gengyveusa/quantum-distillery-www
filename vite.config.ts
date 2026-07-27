@@ -14,9 +14,10 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['apple-touch-icon.png', 'pwa-192x192.png', 'pwa-512x512.png'],
       manifest: {
-        name: 'SedSim — Pharmacokinetic Sedation Simulator',
-        short_name: 'SedSim',
-        description: 'Real-time pharmacokinetic sedation simulator for medical education',
+        name: 'The Quantum Distillery',
+        short_name: 'Quantum Distillery',
+        description:
+          'Distilling complexity into clarity — from the quantum to the clinical. Quantum biology, information theory, and the Epoch #4 framework.',
         theme_color: '#0a0a0f',
         background_color: '#0a0a0f',
         display: 'standalone',

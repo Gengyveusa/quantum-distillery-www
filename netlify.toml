@@ -11,9 +11,17 @@
 # - Dependency install is automatic; .npmrc (legacy-peer-deps=true) is honoured.
 
 [build]
-  command = "npm run build"
+  # `npm run build` = vite build && npm run prerender.
+  # The prerender step needs a Chromium binary, which is not in Netlify's image
+  # by default, so install it first. See scripts/prerender.mjs for why the
+  # prerender exists at all.
+  command = "npx playwright install chromium && npm run build"
   publish = "dist"
 
 [build.environment]
   # Pin to the Node version CI builds and tests against.
   NODE_VERSION = "20"
+  # Install Playwright's browser into node_modules rather than a global cache,
+  # so Netlify's dependency cache retains it between builds instead of
+  # re-downloading ~150MB every time.
+  PLAYWRIGHT_BROWSERS_PATH = "0"

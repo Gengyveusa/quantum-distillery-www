@@ -2,15 +2,138 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="/pwa-192x192.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Primary identity -->
+    <title>The Quantum Distillery — From the Quantum to the Clinical</title>
+    <meta name="description" content="Quantum biology, information theory, and the Epoch #4 framework — plus clinical instruments like SedSim. Distilling complexity into clarity." />
+    <link rel="canonical" href="https://thequantumdistillery.com/" />
+    <meta name="author" content="S. Thaddeus Connelly, DDS, MD, PhD, FACS" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="The Quantum Distillery" />
+    <meta property="og:title" content="The Quantum Distillery — From the Quantum to the Clinical" />
+    <meta property="og:description" content="Quantum biology, information theory, and the Epoch #4 framework — plus clinical instruments like SedSim. Distilling complexity into clarity." />
+    <meta property="og:url" content="https://thequantumdistillery.com/" />
+    <meta property="og:image" content="https://thequantumdistillery.com/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="The Quantum Distillery — distilling complexity into clarity, from the quantum to the clinical" />
+    <meta property="og:locale" content="en_US" />
+
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="The Quantum Distillery — From the Quantum to the Clinical" />
+    <meta name="twitter:description" content="Quantum biology, information theory, and the Epoch #4 framework — plus clinical instruments like SedSim." />
+    <meta name="twitter:image" content="https://thequantumdistillery.com/og-image.png" />
+
+    <!-- PWA / Apple -->
     <meta name="theme-color" content="#0a0a0f" />
-    <meta name="description" content="Real-time pharmacokinetic sedation simulator for medical education" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="SedSim" />
+    <meta name="apple-mobile-web-app-title" content="Quantum Distillery" />
+    <link rel="icon" type="image/png" href="/pwa-192x192.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <title>SedSim - Pharmacokinetic Sedation Simulator</title>
+
+    <!--
+      Structured data. @id values are stable URIs — keep them constant across edits
+      so the entity graph accumulates rather than forking.
+    -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://thequantumdistillery.com/#organization",
+          "name": "The Quantum Distillery",
+          "alternateName": "Quantum Distillery",
+          "url": "https://thequantumdistillery.com/",
+          "slogan": "Distilling complexity into clarity — from the quantum to the clinical",
+          "description": "A research and instrument studio working at the convergence of mathematics, physics, and biology — quantum biology, information theory, and the Epoch #4 framework — producing clinical and educational instruments including SedSim.",
+          "foundingDate": "2024",
+          "location": {
+            "@type": "Place",
+            "address": {
+              "@type": "PostalAddress",
+              "addressLocality": "San Francisco",
+              "addressRegion": "CA",
+              "addressCountry": "US"
+            }
+          },
+          "founder": { "@id": "https://thequantumdistillery.com/#founder" },
+          "knowsAbout": [
+            "Quantum biology",
+            "Information theory",
+            "Consciousness studies",
+            "Anesthesiology",
+            "Pharmacokinetics",
+            "Medical simulation",
+            "Medical education"
+          ]
+        },
+        {
+          "@type": "Person",
+          "@id": "https://thequantumdistillery.com/#founder",
+          "name": "Stephen Thaddeus Connelly",
+          "alternateName": [
+            "S. Thaddeus Connelly",
+            "Stephen Connelly",
+            "Thaddeus Connelly",
+            "Thad Connelly"
+          ],
+          "honorificSuffix": "DDS, MD, PhD, FACS",
+          "jobTitle": "Founder",
+          "description": "Oral and maxillofacial surgeon-scientist. Residency Program Director in Oral and Maxillofacial Surgery at the San Francisco VA Medical Center and clinical faculty at the University of California, San Francisco.",
+          "affiliation": [
+            { "@type": "Organization", "name": "University of California, San Francisco" },
+            { "@type": "Organization", "name": "San Francisco VA Medical Center" }
+          ],
+          "worksFor": { "@id": "https://thequantumdistillery.com/#organization" },
+          "sameAs": [
+            "https://www.linkedin.com/in/stephen-thaddeus-connelly-8954024b",
+            "https://www.ucsfdentalcenter.org/providers/stephen-connelly-dds-md-phd"
+          ]
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://thequantumdistillery.com/#website",
+          "url": "https://thequantumdistillery.com/",
+          "name": "The Quantum Distillery",
+          "description": "Distilling complexity into clarity — from the quantum to the clinical.",
+          "publisher": { "@id": "https://thequantumdistillery.com/#organization" },
+          "inLanguage": "en-US"
+        },
+        {
+          "@type": "SoftwareApplication",
+          "@id": "https://thequantumdistillery.com/#sedsim",
+          "name": "SedSim",
+          "applicationCategory": "EducationalApplication",
+          "operatingSystem": "Web",
+          "description": "High-fidelity anesthesia and sedation simulator with real-time vital sign modeling, a pharmacokinetic engine, and an AI clinical mentor (SimMaster). Built for oral surgery and sedation training.",
+          "author": { "@id": "https://thequantumdistillery.com/#founder" },
+          "publisher": { "@id": "https://thequantumdistillery.com/#organization" },
+          "availableLanguage": ["en", "es", "it"],
+          "isAccessibleForFree": true
+        },
+        {
+          "@type": "DefinedTerm",
+          "@id": "https://thequantumdistillery.com/#epoch-4",
+          "name": "Epoch #4",
+          "alternateName": "Epoch #4: Information Becomes Aware",
+          "description": "A framework proposing that the emergence of consciousness represents a new regime of negentropy, in which information itself becomes the substrate organized against the thermodynamic gradient. Positioned as the unifying framework across the Quantum Distillery's work.",
+          "inDefinedTermSet": {
+            "@type": "DefinedTermSet",
+            "name": "The Connelly Lexicon",
+            "url": "https://corpus.gengyveusa.com/"
+          }
+        }
+      ]
+    }
+    </script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />

@@ -1,0 +1,85 @@
+# robots.txt — thequantumdistillery.com
+#
+# Vite copies public/ into dist/ verbatim, and Netlify serves real static files
+# before consulting _redirects. So this file wins over the SPA catch-all
+# (/* -> /index.html 200) that previously made /robots.txt return HTML.
+
+User-agent: *
+Allow: /
+
+# ---------------------------------------------------------------
+# AI / answer-engine crawlers — explicitly allowed.
+#
+# Deliberate choice, not a default. These crawlers are how ChatGPT, Claude,
+# Perplexity, and Gemini learn this site exists and become able to cite it.
+# Blocking them is the usual "protect my content" reflex; for an AEO strategy
+# it guarantees zero citations. Flip to Disallow only if the goal changes
+# from visibility to control.
+# ---------------------------------------------------------------
+
+# OpenAI
+User-agent: GPTBot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+# Anthropic
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+# Perplexity
+User-agent: PerplexityBot
+Allow: /
+
+# Google — Gemini / AI Overviews (distinct from Googlebot)
+User-agent: Google-Extended
+Allow: /
+
+# Microsoft — Copilot
+User-agent: Bingbot
+Allow: /
+
+# Common Crawl — feeds many downstream model corpora
+User-agent: CCBot
+Allow: /
+
+# Apple Intelligence
+User-agent: Applebot
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+# Meta AI
+User-agent: FacebookBot
+Allow: /
+
+User-agent: meta-externalagent
+Allow: /
+
+# xAI — Grok
+User-agent: xAI-Bot
+Allow: /
+
+# Amazon
+User-agent: Amazonbot
+Allow: /
+
+# ---------------------------------------------------------------
+# Gated content — The Door is a word-gated preview of The Relief Issue 01.
+# ---------------------------------------------------------------
+User-agent: *
+Disallow: /undercut
+Disallow: /undercut/
+
+Sitemap: https://thequantumdistillery.com/sitemap.xml
