@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Not found — The Quantum Distillery</title>
+    <!--
+      A page that does not exist must say so with a 404 status, not a 200.
+      Netlify serves this file via the catch-all rule in public/_redirects.
+
+      Deliberately static: it must render even if the JS bundle is the thing
+      that failed, and a crawler hitting a dead URL should not need to boot
+      React to be told the page is gone.
+    -->
+    <meta name="robots" content="noindex, follow" />
+    <link rel="icon" type="image/png" href="/pwa-192x192.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;600&family=Playfair+Display:wght@400&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body {
+        background: #12100c;
+        color: #f5e8c8;
+        font-family: 'IBM Plex Sans', system-ui, sans-serif;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 48px 24px;
+        text-align: center;
+      }
+      .wrap { max-width: 560px; }
+      .code {
+        font-size: 13px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: #d99a2b;
+        margin-bottom: 22px;
+      }
+      h1 {
+        font-family: 'Playfair Display', Georgia, serif;
+        font-weight: 400;
+        font-size: clamp(30px, 6vw, 46px);
+        color: #f0a522;
+        line-height: 1.15;
+        margin-bottom: 20px;
+      }
+      p { color: #9a8f7a; line-height: 1.7; font-size: 16px; font-weight: 300; margin-bottom: 34px; }
+      .links { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+      a {
+        color: #f5e8c8;
+        text-decoration: none;
+        border: 1px solid rgba(240, 165, 34, 0.28);
+        border-radius: 4px;
+        padding: 11px 20px;
+        font-size: 14px;
+        transition: border-color 0.2s, color 0.2s;
+      }
+      a:hover { border-color: #f0a522; color: #f0a522; }
+      .hint { margin-top: 40px; font-size: 12.5px; color: #6b6252; letter-spacing: 0.04em; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="code">Error 404</div>
+      <h1>Nothing distils here</h1>
+      <p>
+        That address doesn't correspond to anything on the site. It may have
+        been mistyped, or it may have moved.
+      </p>
+      <div class="links">
+        <a href="/">The distillery</a>
+        <a href="/concepts/epoch-4">Epoch #4</a>
+        <a href="/sim">SedSim</a>
+      </div>
+      <p class="hint">Distilling complexity into clarity — from the quantum to the clinical.</p>
+    </div>
+  </body>
+</html>
