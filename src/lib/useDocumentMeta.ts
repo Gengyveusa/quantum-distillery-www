@@ -16,6 +16,20 @@ import { useEffect } from 'react';
 
 const SITE = 'https://thequantumdistillery.com';
 
+/**
+ * Netlify serves directory-index files under a trailing slash and 301s the
+ * bare form to it: a request for /sim redirects to /sim/. So /sim/ is the URL
+ * that actually returns 200, and it is what the canonical must name.
+ *
+ * Declaring /sim canonical while /sim only redirects points the tag at a URL
+ * that is never the final destination — a self-contradicting signal. Rather
+ * than fight the platform default, match it, and normalise in one place so
+ * callers cannot forget.
+ */
+function canonicalPath(path: string) {
+  return path.endsWith('/') ? path : `${path}/`;
+}
+
 function setMeta(selector: string, attr: 'name' | 'property', key: string, content: string) {
   let el = document.head.querySelector<HTMLMetaElement>(selector);
   if (!el) {
@@ -49,7 +63,7 @@ export type DocumentMeta = {
 
 export function useDocumentMeta({ title, description, path, jsonLd, noindex }: DocumentMeta) {
   useEffect(() => {
-    const url = `${SITE}${path}`;
+    const url = `${SITE}${canonicalPath(path)}`;
 
     document.title = title;
     setMeta('meta[name="description"]', 'name', 'description', description);
