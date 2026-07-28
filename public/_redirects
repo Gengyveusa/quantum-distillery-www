@@ -1,3 +1,25 @@
-# Netlify _redirects — SPA routing + The Door subpath
+# Netlify _redirects
+#
+# Netlify matches real files in dist/ BEFORE consulting this file, so every
+# prerendered route — /, /sim, and the twelve /concepts/<slug> pages — is
+# served from its own HTML and never reaches these rules.
+#
+# What follows applies only to paths with no file behind them.
+
+# The Door — word-gated preview of The Relief Issue 01.
 /undercut    /undercut/index.html    200
-/*           /index.html             200
+
+# The instructor dashboard is the one client-only route: deliberately not
+# prerendered (a tool, not content), so it has no file of its own and needs
+# the SPA shell handed to it explicitly. Without this line the rule below
+# would 404 a working page.
+/instructor  /index.html             200
+
+# Everything else genuinely does not exist, and should say so.
+#
+# This previously read `/*  /index.html  200`, which meant every mistyped
+# link, stale URL and scanner probe returned the full home page with a 200 —
+# /wibble and /.env included. That is a soft 404: search engines index the
+# junk URL as a real page duplicating the home page, diluting the routes that
+# are real. Now they get a 404 status and a page that says so.
+/*           /404.html               404
