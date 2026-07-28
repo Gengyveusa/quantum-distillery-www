@@ -207,7 +207,9 @@ const sitemap =
   ROUTES.map(
     (r) =>
       `  <url>\n` +
-      `    <loc>${SITE}${r === '/' ? '/' : r}</loc>\n` +
+      // Trailing slash matches what Netlify actually serves — /sim 301s to
+      // /sim/ — so the sitemap, the canonical tags and the served URL all agree.
+      `    <loc>${SITE}${r.endsWith('/') ? r : `${r}/`}</loc>\n` +
       `    <lastmod>${today}</lastmod>\n` +
       `    <changefreq>${changefreq(r)}</changefreq>\n` +
       `    <priority>${priority(r)}</priority>\n` +
