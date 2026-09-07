@@ -204,7 +204,7 @@ export default function LandingPage() {
       <nav className="qd-nav qd-glass" style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'20px 40px' }}>
         <span style={{ color:C.amber, fontSize:13, letterSpacing:'.2em', textTransform:'uppercase', fontFamily:font.sans, fontWeight:700 }}>The Quantum Distillery</span>
         <div style={{ display:'flex', gap:28 }}>
-          <a href="https://thequantumdistillery.substack.com" className="qd-link" style={{ color:C.muted, textDecoration:'none', fontSize:13, letterSpacing:'.1em', fontFamily:font.sans, transition:'color .2s' }}>Substack</a>
+          <a href="https://thequantumdistillery.beehiiv.com" className="qd-link" style={{ color:C.muted, textDecoration:'none', fontSize:13, letterSpacing:'.1em', fontFamily:font.sans, transition:'color .2s' }}>The Pours</a>
           <a href="https://www.gengyveusa.com" className="qd-link" style={{ color:C.muted, textDecoration:'none', fontSize:13, letterSpacing:'.1em', fontFamily:font.sans, transition:'color .2s' }}>Gengyve</a>
           <span onClick={() => navigate('/sim')} className="qd-link" style={{ color:C.muted, cursor:'pointer', fontSize:13, letterSpacing:'.1em', fontFamily:font.sans, transition:'color .2s' }}>SedSim</span>
           <span onClick={() => navigate('/instructor')} className="qd-link" style={{ color:C.muted, cursor:'pointer', fontSize:13, letterSpacing:'.1em', fontFamily:font.sans, transition:'color .2s' }}>Instructor</span>
@@ -219,7 +219,7 @@ export default function LandingPage() {
         <p style={{ color:C.cream, fontSize:17, maxWidth:560, margin:'0 auto 48px', lineHeight:1.7, fontFamily:font.serif, fontStyle:'italic', opacity:.85 }}>Distilling complexity into clarity — from the quantum to the clinical</p>
         <div style={{ display:'flex', gap:16, justifyContent:'center', flexWrap:'wrap' }}>
           <button onClick={() => navigate('/sim')} className="qd-btn" style={{ background:C.amber, color:C.bg, border:'none', padding:'14px 32px', fontSize:13, letterSpacing:'.12em', textTransform:'uppercase', fontFamily:font.sans, fontWeight:700, cursor:'pointer', transition:'all .2s' }}>Launch SedSim</button>
-          <a href="https://thequantumdistillery.substack.com" className="qd-btn2 qd-glass" style={{ border:`1px solid ${C.amber}`, color:C.amber, borderRadius:6, padding:'14px 32px', fontSize:13, letterSpacing:'.12em', textTransform:'uppercase', fontFamily:font.sans, fontWeight:700, textDecoration:'none', transition:'all .2s' }}>Read the Pours</a>
+          <a href="https://thequantumdistillery.beehiiv.com" className="qd-btn2 qd-glass" style={{ border:`1px solid ${C.amber}`, color:C.amber, borderRadius:6, padding:'14px 32px', fontSize:13, letterSpacing:'.12em', textTransform:'uppercase', fontFamily:font.sans, fontWeight:700, textDecoration:'none', transition:'all .2s' }}>Read the Pours</a>
         </div>
       </section>
 
