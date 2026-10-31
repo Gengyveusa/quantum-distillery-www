@@ -54,7 +54,7 @@ function conceptSlugs() {
   return slugs;
 }
 
-const ROUTES = ['/', '/sim', ...conceptSlugs().map((s) => `/concepts/${s}`)];
+const ROUTES = ['/', '/about', '/sim', ...conceptSlugs().map((s) => `/concepts/${s}`)];
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
@@ -197,7 +197,7 @@ if (failed) {
 const SITE = 'https://thequantumdistillery.com';
 const today = process.env.SITEMAP_DATE || new Date().toISOString().slice(0, 10);
 
-const priority = (route) => (route === '/' ? '1.0' : route === '/sim' ? '0.9' : '0.8');
+const priority = (route) => (route === '/' ? '1.0' : route === '/sim' || route === '/about' ? '0.9' : '0.8');
 const changefreq = (route) => (route === '/' ? 'weekly' : 'monthly');
 
 const sitemap =

@@ -3,6 +3,8 @@ import { conceptByName } from './lib/concepts';
 import { useDocumentMeta } from './lib/useDocumentMeta';
 import { useEffect, useRef, useState } from 'react';
 import FluidStarfield from './components/FluidStarfield';
+import { WatchSection, WritingSection } from './components/FrontDoor';
+import { YOUTUBE_URL } from './lib/hub';
 
 /* ---- Liquid Glass capability tier ----
  * Picks the best material the browser can render. See the inline comment on the
@@ -204,6 +206,9 @@ export default function LandingPage() {
       <nav className="qd-nav qd-glass" style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'20px 40px' }}>
         <span style={{ color:C.amber, fontSize:13, letterSpacing:'.2em', textTransform:'uppercase', fontFamily:font.sans, fontWeight:700 }}>The Quantum Distillery</span>
         <div style={{ display:'flex', gap:28 }}>
+          <a href="#writing" className="qd-link" style={{ color:C.muted, textDecoration:'none', fontSize:13, letterSpacing:'.1em', fontFamily:font.sans, transition:'color .2s' }}>Writing</a>
+          <a href={YOUTUBE_URL} className="qd-link" style={{ color:C.muted, textDecoration:'none', fontSize:13, letterSpacing:'.1em', fontFamily:font.sans, transition:'color .2s' }}>Watch</a>
+          <Link to="/about" className="qd-link" style={{ color:C.muted, textDecoration:'none', fontSize:13, letterSpacing:'.1em', fontFamily:font.sans, transition:'color .2s' }}>About</Link>
           <a href="https://pours.thequantumdistillery.com" className="qd-link" style={{ color:C.muted, textDecoration:'none', fontSize:13, letterSpacing:'.1em', fontFamily:font.sans, transition:'color .2s' }}>The Pours</a>
           <a href="https://www.gengyveusa.com" className="qd-link" style={{ color:C.muted, textDecoration:'none', fontSize:13, letterSpacing:'.1em', fontFamily:font.sans, transition:'color .2s' }}>Gengyve</a>
           <span onClick={() => navigate('/sim')} className="qd-link" style={{ color:C.muted, cursor:'pointer', fontSize:13, letterSpacing:'.1em', fontFamily:font.sans, transition:'color .2s' }}>SedSim</span>
@@ -220,8 +225,12 @@ export default function LandingPage() {
         <div style={{ display:'flex', gap:16, justifyContent:'center', flexWrap:'wrap' }}>
           <button onClick={() => navigate('/sim')} className="qd-btn" style={{ background:C.amber, color:C.bg, border:'none', padding:'14px 32px', fontSize:13, letterSpacing:'.12em', textTransform:'uppercase', fontFamily:font.sans, fontWeight:700, cursor:'pointer', transition:'all .2s' }}>Launch SedSim</button>
           <a href="https://pours.thequantumdistillery.com" className="qd-btn2 qd-glass" style={{ border:`1px solid ${C.amber}`, color:C.amber, borderRadius:6, padding:'14px 32px', fontSize:13, letterSpacing:'.12em', textTransform:'uppercase', fontFamily:font.sans, fontWeight:700, textDecoration:'none', transition:'all .2s' }}>Read the Pours</a>
+          <a href="#writing" className="qd-btn2 qd-glass" style={{ border:`1px solid ${C.amber}`, color:C.amber, borderRadius:6, padding:'14px 32px', fontSize:13, letterSpacing:'.12em', textTransform:'uppercase', fontFamily:font.sans, fontWeight:700, textDecoration:'none', transition:'all .2s' }}>Subscribe</a>
         </div>
       </section>
+
+      {/* ---- WRITING + SUBSCRIBE (front door) ---- */}
+      <WritingSection />
 
       {/* ---- DEFINITION I: DISTILLERY ---- */}
       <section className="qd-fade qd-glass" style={{ maxWidth:780, margin:'48px auto', padding:'56px 44px' }}>
@@ -349,6 +358,9 @@ export default function LandingPage() {
         ))}
       </section>
 
+      {/* ---- WATCH ---- */}
+      <WatchSection />
+
       {/* ---- RESEARCH BANNER ---- */}
       <section className="qd-fade qd-glass" style={{ maxWidth:900, margin:'48px auto', padding:'56px 44px', textAlign:'center' }}>
         <p style={{ color:C.amber, fontSize:12, letterSpacing:'.3em', textTransform:'uppercase', marginBottom:12 }}>Active Research</p>
@@ -363,6 +375,12 @@ export default function LandingPage() {
       <footer style={{ textAlign:'center', padding:'40px 24px', borderTop:`1px solid ${C.border}` }}>
         <p style={{ color:C.dim, fontSize:12, letterSpacing:'.15em', marginBottom:8 }}>The Quantum Distillery © 2026 • Thad Connelly MD DDS PhD</p>
         <p style={{ color:C.dim, fontSize:11, letterSpacing:'.1em' }}>GengyveUSA • Boutique Venture Partners • San Francisco</p>
+        <p style={{ color:C.dim, fontSize:11, letterSpacing:'.1em', marginTop:12, display:'flex', gap:16, justifyContent:'center', flexWrap:'wrap' }}>
+          <a href="#writing" className="qd-link" style={{ color:C.muted, textDecoration:'none' }}>Writing</a>
+          <a href={YOUTUBE_URL} className="qd-link" style={{ color:C.muted, textDecoration:'none' }}>YouTube</a>
+          <Link to="/about" className="qd-link" style={{ color:C.muted, textDecoration:'none' }}>About</Link>
+          <a href="https://orcid.org/0009-0003-4800-3913" className="qd-link" style={{ color:C.muted, textDecoration:'none' }}>ORCID</a>
+        </p>
       </footer>
 
     </div>
