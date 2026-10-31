@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { registerSW } from 'virtual:pwa-register';
 import LandingPage from './LandingPage';
 import ConceptPage from './ConceptPage';
+import AboutPage from './AboutPage';
 import { useDocumentMeta } from './lib/useDocumentMeta';
 import './i18n';
 import './index.css';
@@ -70,6 +71,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/concepts/:slug" element={<ConceptPage />} />
+        <Route path="/about" element={<AboutPage />} />
         <Route path="/sim" element={<SimRoute />} />
         <Route path="/instructor" element={<InstructorRoute />} />
         <Route path="*" element={<Navigate to="/" replace />} />
