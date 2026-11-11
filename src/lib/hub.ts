@@ -21,10 +21,11 @@ export const ORCID_URL = `https://orcid.org/${ORCID}`;
 export const LINKEDIN_URL = 'https://www.linkedin.com/in/stephen-thaddeus-connelly-8954024b';
 
 /**
- * The channel ID URL rather than the @handle: it survives the channel rename
- * (GengyveUSA -> Dr Thaddeus Connelly), which a handle URL would not.
+ * The Quantum Distillery's own YouTube channel. The channel ID URL rather than
+ * the @handle: a handle can be renamed, the ID cannot. The Gengyve channel
+ * (Chairside with Dr. Connelly) is a separate channel and is not linked here.
  */
-export const YOUTUBE_URL = 'https://www.youtube.com/channel/UC3thFE5bh0MLD2ywJ1KQ-rg';
+export const YOUTUBE_URL = 'https://www.youtube.com/channel/UCjo4uZAXO6J455rU7JUzmiQ';
 
 export type Newsletter = {
   id: 'pours' | 'ledger' | '1840';
