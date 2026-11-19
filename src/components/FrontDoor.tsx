@@ -101,7 +101,8 @@ export function WatchSection() {
         The channel where the pours become episodes: the surgeon on camera, the physics in motion.
       </p>
       <div style={{ display: 'flex', gap: 18, justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap' }}>
-        <a href={YOUTUBE_URL} className="qd-btn" style={primaryBtn}>Watch on YouTube</a>
+        <a href={`${import.meta.env.BASE_URL}watch/the-machine-around-the-machine/`} className="qd-btn" style={primaryBtn}>Watch The Machine Around the Machine</a>
+        <a href={YOUTUBE_URL} className="qd-link" style={quietLink}>YouTube channel</a>
         <Link to="/about" className="qd-link" style={quietLink}>About Thad →</Link>
       </div>
     </section>

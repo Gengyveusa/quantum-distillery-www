@@ -1,0 +1,978 @@
+WEBVTT
+
+1
+00:00:00.000 --> 00:00:03.779
+[Narrator] Why would a refrigerator
+company order helium from the Moon?
+
+2
+00:00:04.043 --> 00:00:07.757
+[Thad] I’m Thad Connelly.
+This is The Quantum Distillery.
+
+3
+00:00:08.103 --> 00:00:13.119
+[Narrator] In September 2025,
+Bluefors agreed to buy up to 10,000 liters
+
+4
+00:00:13.119 --> 00:00:18.633
+of helium-3 a year from Interlune,
+which plans to recover it from lunar soil.
+
+5
+00:00:19.156 --> 00:00:22.127
+Deliveries are supposed to start in 2028.
+
+6
+00:00:22.220 --> 00:00:24.356
+Bringing it back is still ahead of them.
+
+7
+00:00:24.507 --> 00:00:26.876
+The refrigerators already exist.
+
+8
+00:00:26.969 --> 00:00:30.440
+And if you want to understand that order,
+follow the helium.
+
+9
+00:00:31.450 --> 00:00:35.525
+There are two pieces of hardware
+to keep in mind while we follow this.
+
+10
+00:00:35.676 --> 00:00:38.231
+One fits in the palm of your hand.
+
+11
+00:00:38.382 --> 00:00:41.098
+It's the package holding
+a quantum processor.
+
+12
+00:00:41.249 --> 00:00:43.374
+The other can occupy a lab.
+
+13
+00:00:43.595 --> 00:00:47.565
+It creates the conditions in
+which that first piece can do any work.
+
+14
+00:00:47.879 --> 00:00:51.791
+You can learn a surprising amount
+about the future of quantum computing
+
+15
+00:00:51.826 --> 00:00:54.554
+from the person who has
+to make room for both.
+
+16
+00:00:54.647 --> 00:00:57.457
+That person has to figure out
+where to put the pumps,
+
+17
+00:00:57.457 --> 00:01:02.170
+how to get signals in, and how to tell
+whether the machine did what you asked.
+
+18
+00:01:02.170 --> 00:01:06.013
+Last time we counted the qubits
+it might take to break encryption.
+
+19
+00:01:06.106 --> 00:01:10.564
+Today, look at the famous photograph
+of a superconducting quantum computer.
+
+20
+00:01:10.657 --> 00:01:13.072
+Gold plates, loops of cable,
+
+21
+00:01:13.072 --> 00:01:16.322
+something that looks like
+a chandelier hung upside down.
+
+22
+00:01:16.729 --> 00:01:18.133
+Where's the processor?
+
+23
+00:01:18.168 --> 00:01:22.591
+Follow the cables to the bottom. The chip
+occupies a small package down there.
+
+24
+00:01:22.684 --> 00:01:25.413
+Much of what you're looking
+at is the refrigerator.
+
+25
+00:01:25.506 --> 00:01:30.207
+The photograph usually shows it open,
+so we can see inside. To run the machine,
+
+26
+00:01:30.207 --> 00:01:34.572
+the team puts shields and a vacuum
+enclosure around those layers.
+
+27
+00:01:34.793 --> 00:01:38.636
+Picture a cross section through
+a series of nested metal cans.
+
+28
+00:01:38.729 --> 00:01:42.374
+The outermost one faces
+a room full of warm surfaces.
+
+29
+00:01:42.467 --> 00:01:45.857
+Shields farther in see
+colder surroundings.
+
+30
+00:01:45.892 --> 00:01:49.387
+Cables have to get through all of it.
+And the chip at the bottom needs
+
+31
+00:01:49.387 --> 00:01:53.009
+a good thermal connection
+to that last cold stage.
+
+32
+00:01:53.160 --> 00:01:56.979
+A thermometer on a metal plate can
+tell you the temperature of the plate.
+
+33
+00:01:57.386 --> 00:02:00.173
+Finding out what the qubit
+is actually experiencing
+
+34
+00:02:00.173 --> 00:02:02.970
+takes a measurement of the qubit itself.
+
+35
+00:02:02.971 --> 00:02:05.990
+Inside that chip,
+two energy levels of a tiny
+
+36
+00:02:05.990 --> 00:02:09.391
+electrical circuit stand for zero and one.
+
+37
+00:02:09.542 --> 00:02:14.081
+A pulse of microwave energy lets
+you change the state deliberately.
+
+38
+00:02:14.175 --> 00:02:18.691
+Heat can give the circuit enough
+energy to change state all by itself.
+
+39
+00:02:19.098 --> 00:02:22.383
+Suppose you tell it to start
+a calculation at zero.
+
+40
+00:02:22.534 --> 00:02:24.577
+If it's already bounced up to one,
+
+41
+00:02:24.577 --> 00:02:28.211
+you've got the wrong answer
+to a question you haven't even asked yet.
+
+42
+00:02:28.873 --> 00:02:33.563
+Cooling makes those accidental
+excitations much less likely.
+
+43
+00:02:34.225 --> 00:02:39.670
+Take a representative superconducting
+qubit that responds at 5 GHz.
+
+44
+00:02:39.891 --> 00:02:43.176
+5 billion cycles per second sounds fast,
+
+45
+00:02:43.176 --> 00:02:46.787
+but a photon at that frequency
+carries very little energy.
+
+46
+00:02:47.007 --> 00:02:50.664
+Express the gap between zero
+and one on a temperature scale
+
+47
+00:02:50.664 --> 00:02:52.800
+and it's about a quarter of a kelvin.
+
+48
+00:02:52.951 --> 00:02:55.807
+A room is roughly 300 kelvin.
+
+49
+00:02:55.842 --> 00:02:59.836
+So the chip has to sit far
+below that quarter-kelvin scale,
+
+50
+00:02:59.836 --> 00:03:03.876
+and its electrical surroundings
+have to be quiet at that frequency.
+
+51
+00:03:04.027 --> 00:03:07.371
+You could have an excellent refrigerator
+and still spoil an experiment
+
+52
+00:03:07.371 --> 00:03:10.773
+by giving the warm room a direct
+microwave path to the chip.
+
+53
+00:03:11.295 --> 00:03:15.614
+That explains some of those little
+boxes mounted along the cables.
+
+54
+00:03:15.615 --> 00:03:18.355
+Now count the plates from top to bottom.
+
+55
+00:03:18.506 --> 00:03:22.290
+Each stage intercepts heat
+before it reaches the next.
+
+56
+00:03:22.813 --> 00:03:26.064
+At the cold end,
+a dilution refrigerator can get within
+
+57
+00:03:26.064 --> 00:03:29.094
+a hundredth of a degree of absolute zero.
+
+58
+00:03:29.501 --> 00:03:32.786
+The last step uses two forms of helium.
+
+59
+00:03:32.879 --> 00:03:38.695
+Where the liquids meet, helium-3 can
+pass into a mixture rich in helium-4.
+
+60
+00:03:38.730 --> 00:03:41.285
+That takes energy from the surroundings.
+
+61
+00:03:41.285 --> 00:03:45.476
+Pumps keep the helium circulating
+so the cooling continues.
+
+62
+00:03:45.696 --> 00:03:48.134
+The same helium goes around again.
+
+63
+00:03:48.227 --> 00:03:51.373
+Each additional fridge
+needs its own supply.
+
+64
+00:03:51.466 --> 00:03:53.742
+Helium-3 is an isotope.
+
+65
+00:03:53.835 --> 00:03:59.117
+Compared with the common helium-4 atom,
+its nucleus has one fewer neutron.
+
+66
+00:03:59.210 --> 00:04:03.552
+That small difference changes how the two
+liquids behave near absolute zero
+
+67
+00:04:03.552 --> 00:04:06.129
+and makes this cooling cycle possible.
+
+68
+00:04:06.652 --> 00:04:11.516
+Bluefors actually lists the gas
+quantities for different refrigerators.
+
+69
+00:04:11.667 --> 00:04:15.626
+For one model,
+the listed charge is 40 liters of helium-3
+
+70
+00:04:15.626 --> 00:04:18.459
+and 180 liters of helium-4.
+
+71
+00:04:18.773 --> 00:04:22.488
+Those are gas quantities,
+measured as gas volumes.
+
+72
+00:04:22.709 --> 00:04:26.563
+Once the system is running,
+it circulates a fixed inventory.
+
+73
+00:04:26.656 --> 00:04:29.930
+So when a manufacturer
+lines up a future source,
+
+74
+00:04:29.930 --> 00:04:32.495
+think about outfitting
+a fleet of machines.
+
+75
+00:04:32.809 --> 00:04:37.081
+A year's worth of computing on one
+machine is a different question.
+
+76
+00:04:37.082 --> 00:04:40.216
+So we've put the chip in a quiet,
+cold place.
+
+77
+00:04:40.368 --> 00:04:42.108
+Now we have to talk to it.
+
+78
+00:04:42.330 --> 00:04:45.278
+Follow one control cable
+from the electronics rack,
+
+79
+00:04:45.278 --> 00:04:49.202
+which is warm enough to rest your hand on,
+all the way down to the chip.
+
+80
+00:04:49.422 --> 00:04:53.532
+It carries the microwave instruction.
+It also conducts heat.
+
+81
+00:04:53.754 --> 00:04:57.260
+Engineers fasten the cable
+to successive cold stages
+
+82
+00:04:57.260 --> 00:04:59.918
+and reduce the noise coming down the line.
+
+83
+00:05:00.140 --> 00:05:04.666
+Even when the computer is sitting idle,
+that cable is still bringing heat in.
+
+84
+00:05:04.980 --> 00:05:07.058
+A team in Zurich measured what was
+
+85
+00:05:07.058 --> 00:05:09.950
+available at the bottom
+of a particular fridge.
+
+86
+00:05:10.262 --> 00:05:16.974
+With one circulation setting they could
+remove about 5 microwatts at 13 mK.
+
+87
+00:05:17.380 --> 00:05:20.468
+Let that stage warm to 20 mK
+
+88
+00:05:20.562 --> 00:05:24.090
+and it could remove about 13 microwatts.
+
+89
+00:05:24.242 --> 00:05:27.260
+Same fridge. Same circulation setting.
+
+90
+00:05:27.574 --> 00:05:31.938
+Two different answers to the question,
+how much cooling do I get?
+
+91
+00:05:32.948 --> 00:05:36.618
+The engineers also measured
+the heat conducted by cables
+
+92
+00:05:36.618 --> 00:05:40.332
+and the heat released while electrical
+signals were running through them.
+
+93
+00:05:40.484 --> 00:05:43.176
+If you're adding a bundle
+of lines to that machine,
+
+94
+00:05:43.212 --> 00:05:47.078
+you need both sets of numbers
+before you drill another hole.
+
+95
+00:05:47.078 --> 00:05:50.201
+Imagine adding a hundred
+more control connections.
+
+96
+00:05:50.352 --> 00:05:53.196
+Where do you put them,
+and how do you cool them?
+
+97
+00:05:53.858 --> 00:05:56.308
+A Delft company called FrostByte is
+
+98
+00:05:56.308 --> 00:05:59.617
+developing switches that
+work inside the refrigerator.
+
+99
+00:05:59.837 --> 00:06:03.007
+The idea is to send
+signals down fewer lines
+
+100
+00:06:03.007 --> 00:06:05.363
+and route them closer to the processor.
+
+101
+00:06:05.677 --> 00:06:09.566
+Put electronics in the cold
+and you face the next question.
+
+102
+00:06:09.880 --> 00:06:13.026
+Those electronics generate
+heat of their own.
+
+103
+00:06:13.850 --> 00:06:17.438
+How much can you dissipate on the stage
+where the switch sits?
+
+104
+00:06:17.438 --> 00:06:20.154
+That's a design decision
+you can measure in the lab.
+
+105
+00:06:20.305 --> 00:06:24.415
+Another team actually sent a control
+signal down an optical fiber.
+
+106
+00:06:24.636 --> 00:06:27.353
+At the cold end a photodetector converted
+
+107
+00:06:27.353 --> 00:06:31.532
+modulated laser light into a microwave
+signal the circuit could use.
+
+108
+00:06:32.055 --> 00:06:34.679
+The researchers demonstrated
+that they could control
+
+109
+00:06:34.679 --> 00:06:37.906
+and read a superconducting
+qubit over that link.
+
+110
+00:06:38.220 --> 00:06:42.608
+One qubit. That experiment
+answered a specific question.
+
+111
+00:06:42.701 --> 00:06:46.788
+Could the conversion preserve a signal
+clean enough to operate the device?
+
+112
+00:06:47.195 --> 00:06:51.839
+A machine with many such links raises
+additional questions about total optical
+
+113
+00:06:51.839 --> 00:06:57.109
+power, heat from the conversion,
+and how many signals can share each fiber.
+
+114
+00:06:57.330 --> 00:07:01.440
+A working experiment gives you
+a place to start measuring all three.
+
+115
+00:07:01.440 --> 00:07:06.118
+Walk into a neutral atom lab and you
+can build a very different picture.
+
+116
+00:07:06.338 --> 00:07:09.450
+Here an individual atom
+carries the information.
+
+117
+00:07:09.544 --> 00:07:13.594
+It's moving through a vacuum chamber,
+and you'd like it to stay put.
+
+118
+00:07:13.908 --> 00:07:16.486
+Laser light slows the atoms down.
+
+119
+00:07:16.636 --> 00:07:21.896
+A tightly focused beam can hold one
+in a tiny spot, an optical tweezer.
+
+120
+00:07:22.118 --> 00:07:26.354
+Make an array of those spots,
+and you can arrange the atoms in rows.
+
+121
+00:07:26.506 --> 00:07:29.780
+The atoms themselves get
+extraordinarily cold.
+
+122
+00:07:29.872 --> 00:07:32.972
+The chamber around them can
+stay at room temperature.
+
+123
+00:07:33.634 --> 00:07:37.268
+Look at what the Caltech team did in 2025.
+
+124
+00:07:37.302 --> 00:07:43.572
+They made about 12,000 trap sites
+and loaded more than 6,100 neutral atoms.
+
+125
+00:07:43.724 --> 00:07:46.928
+A trap site is a place
+the optics can hold an atom.
+
+126
+00:07:47.020 --> 00:07:49.934
+A loaded site actually contains one.
+
+127
+00:07:50.086 --> 00:07:53.382
+Take a picture and you can see
+which seats are occupied.
+
+128
+00:07:53.696 --> 00:07:57.284
+In the same work the researchers
+measured how well the atomic qubits
+
+129
+00:07:57.284 --> 00:08:00.964
+preserved phase information,
+and they could pick up atoms,
+
+130
+00:08:00.964 --> 00:08:04.736
+move them, and put them down
+while preserving coherence.
+
+131
+00:08:05.144 --> 00:08:08.556
+Getting that combination right
+is what makes moving atoms around
+
+132
+00:08:08.556 --> 00:08:10.948
+interesting for a future computation.
+
+133
+00:08:11.262 --> 00:08:16.312
+The two counts tell you how many places
+they made and how many atoms they caught.
+
+134
+00:08:16.312 --> 00:08:19.458
+Light gives you a way
+to read the answer, too.
+
+135
+00:08:19.609 --> 00:08:23.672
+Shine light tuned to a particular
+atomic transition.
+
+136
+00:08:23.893 --> 00:08:27.330
+An atom in the state you're
+looking for scatters photons,
+
+137
+00:08:27.330 --> 00:08:30.197
+and a lens collects some
+of them for a camera.
+
+138
+00:08:30.418 --> 00:08:34.238
+On the image you can pick
+out individual bright sites.
+
+139
+00:08:34.389 --> 00:08:39.079
+Now the shopping list looks different.
+A laser that holds its frequency.
+
+140
+00:08:39.079 --> 00:08:41.796
+Optics that focus it on the right site.
+
+141
+00:08:41.889 --> 00:08:45.151
+A camera sensitive enough
+to collect that faint signal.
+
+142
+00:08:45.674 --> 00:08:48.077
+There's a lovely practical catch.
+
+143
+00:08:48.112 --> 00:08:51.409
+To see an atom clearly,
+you'd like to collect plenty of light.
+
+144
+00:08:51.444 --> 00:08:55.821
+Scattering light kicks the atom, and
+enough kicks can knock it out of its trap.
+
+145
+00:08:55.856 --> 00:09:00.244
+You want an image and you'd like
+your atom back when the exposure ends.
+
+146
+00:09:00.767 --> 00:09:05.759
+The Caltech group reported better
+than 99.99% imaging fidelity
+
+147
+00:09:05.794 --> 00:09:08.116
+and measured survival separately.
+
+148
+00:09:08.638 --> 00:09:11.680
+Try measuring both
+on an array of thousands.
+
+149
+00:09:11.831 --> 00:09:14.734
+A camera that confidently
+reports an empty site
+
+150
+00:09:14.734 --> 00:09:19.598
+and an atom that actually left the site
+can give you the same dark pixel.
+
+151
+00:09:19.912 --> 00:09:23.661
+Figuring out which event happened
+is part of building the instrument.
+
+152
+00:09:23.661 --> 00:09:25.588
+Here's a question for a supplier.
+
+153
+00:09:25.739 --> 00:09:28.944
+If the big quantum computer
+comes five years late,
+
+154
+00:09:28.944 --> 00:09:31.277
+who still needs your equipment?
+
+155
+00:09:32.287 --> 00:09:37.245
+At the US national standards lab,
+researchers use a dilution refrigerator
+
+156
+00:09:37.245 --> 00:09:43.282
+to cool a radiation detector below
+0.05 degrees above absolute zero.
+
+157
+00:09:43.502 --> 00:09:47.960
+A single radioactive decay
+deposits a tiny pulse of heat.
+
+158
+00:09:48.181 --> 00:09:52.210
+From that pulse they can work out
+how much energy the decay released.
+
+159
+00:09:52.430 --> 00:09:55.217
+That's an instrument doing a job today.
+
+160
+00:09:55.623 --> 00:09:58.630
+There's a second customer
+for precision optics, too.
+
+161
+00:09:59.036 --> 00:10:00.941
+In an optical atomic clock,
+
+162
+00:10:00.941 --> 00:10:04.946
+scientists tune a laser
+to a transition inside an atom.
+
+163
+00:10:05.039 --> 00:10:09.195
+The transition gives them a reference
+for how fast the light is oscillating.
+
+164
+00:10:09.509 --> 00:10:13.259
+The challenge is holding that laser
+steady enough to compare its frequency
+
+165
+00:10:13.259 --> 00:10:16.068
+with the atoms over and over again.
+
+166
+00:10:16.730 --> 00:10:21.653
+The national standards lab runs
+clocks using laser-cooled atoms
+
+167
+00:10:21.688 --> 00:10:23.789
+held in a lattice of light.
+
+168
+00:10:24.614 --> 00:10:26.842
+Think back to the atom computer.
+
+169
+00:10:26.994 --> 00:10:31.069
+People in those two labs can have
+a very specific conversation about laser
+
+170
+00:10:31.069 --> 00:10:34.342
+stability, optics and control electronics.
+
+171
+00:10:34.435 --> 00:10:37.489
+They can need some of the same
+engineering even when only one
+
+172
+00:10:37.489 --> 00:10:39.741
+of them wants to run an algorithm.
+
+173
+00:10:39.741 --> 00:10:43.967
+So go back to the Moon deal
+and read the words 'up to.'
+
+174
+00:10:44.373 --> 00:10:47.160
+They matter as much
+as the number beside them.
+
+175
+00:10:47.311 --> 00:10:51.188
+A customer has put a figure and a delivery
+window on what it might buy.
+
+176
+00:10:51.281 --> 00:10:54.752
+A space company still has to collect
+the gas and bring it home.
+
+177
+00:10:54.787 --> 00:10:57.666
+And the atom lab we just visited can order
+
+178
+00:10:57.666 --> 00:11:02.717
+another set of lasers without moving
+that helium order by a single liter.
+
+179
+00:11:03.239 --> 00:11:08.313
+To evaluate one of these suppliers,
+ask to see a customer acceptance test.
+
+180
+00:11:08.626 --> 00:11:11.505
+For a refrigerator,
+what temperature did it hold
+
+181
+00:11:11.505 --> 00:11:15.452
+with the customer's wiring installed
+and the signals turned on?
+
+182
+00:11:15.859 --> 00:11:19.203
+For a laser,
+how long did it stay within the required
+
+183
+00:11:19.203 --> 00:11:21.757
+frequency range during a real run?
+
+184
+00:11:22.279 --> 00:11:25.471
+Then look at the second
+customer's requirements.
+
+185
+00:11:25.785 --> 00:11:29.453
+Sometimes a second lab needs
+nearly the same piece of equipment.
+
+186
+00:11:29.547 --> 00:11:33.796
+Sometimes it needs so much redesign
+that it's effectively a second product.
+
+187
+00:11:34.109 --> 00:11:37.232
+That difference tells you
+much more about the business
+
+188
+00:11:37.232 --> 00:11:40.216
+than a long list of industries on a slide.
+
+189
+00:11:40.217 --> 00:11:44.199
+One last look at those two photographs.
+On one side,
+
+190
+00:11:44.199 --> 00:11:48.622
+a cable carries a microwave pulse
+down through a stack of metal plates.
+
+191
+00:11:48.774 --> 00:11:53.917
+On the other, a lens brings light to a
+spot small enough to hold a single atom.
+
+192
+00:11:54.439 --> 00:11:58.851
+In each photograph it's possible
+to point to where the information sits.
+
+193
+00:11:59.002 --> 00:12:01.022
+It's also possible to follow a signal all
+
+194
+00:12:01.022 --> 00:12:05.121
+the way from an ordinary computer
+to that spot and back again.
+
+195
+00:12:05.272 --> 00:12:09.323
+That whole trip has to work
+before anybody can run the algorithm.
+
+196
+00:12:10.148 --> 00:12:14.118
+It brings the qubit count
+from the last episode into perspective.
+
+197
+00:12:14.525 --> 00:12:19.412
+The next time somebody shows you a quantum
+chip, ask them to widen the shot.
+
+198
+00:12:19.819 --> 00:12:23.127
+Where does the heat go?
+What carries the instruction in?
+
+199
+00:12:23.163 --> 00:12:26.982
+What carries the answer out?
+Those questions will tell you
+
+200
+00:12:26.982 --> 00:12:30.372
+a surprising amount about what
+it takes to build the next one.
+
+201
+00:12:30.686 --> 00:12:33.519
+This has been
+The Machine Around the Machine.
+
+202
+00:12:33.612 --> 00:12:36.356
+Thanks for joining us
+at The Quantum Distillery.
+
+203
+00:12:46.725 --> 00:12:48.501
+[Narrator] Sponsored by Gengyve.
+
+204
+00:12:48.826 --> 00:12:50.045
+In the company’s words,
+
+205
+00:12:50.196 --> 00:12:52.785
+“the world’s first quantum-inspired
+frontier
+
+206
+00:12:52.902 --> 00:12:55.223
+oral and systemic health company.”

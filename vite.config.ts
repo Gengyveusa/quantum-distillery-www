@@ -38,6 +38,8 @@ export default defineConfig({
         ],
       },
       workbox: {
+        // Time-linked watch pages are standalone documents, including on repeat visits.
+        navigateFallbackDenylist: [/\/watch\/the-machine-around-the-machine(?:\/|$)/],
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
         runtimeCaching: [
           {
